@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시험 성적 분석 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4f8;--card:#fff;
+  --p1:#2563eb;--p2:#7c3aed;--ok:#059669;
+  --warn:#d97706;--err:#dc2626;--info:#0891b2;
+  --txt:#1e293b;--muted:#64748b;--border:#e2e8f0;--r:12px;
+}
+body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.hdr{background:linear-gradient(135deg,#1e40af,#5b21b6);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(30,64,175,.3)}
+.hdr-icon{font-size:28px}.hdr h1{font-size:20px;font-weight:700}.hdr p{font-size:12px;opacity:.8;margin-top:2px}
+.hdr-right{margin-left:auto}
+.reset-btn{padding:6px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;font-size:12px;cursor:pointer}
+.reset-btn:hover{background:rgba(255,255,255,.25)}
+.wrap{max-width:1440px;margin:0 auto;padding:18px}
+
+/* UPLOAD */
+.up-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px}
+.up-card{background:var(--card);border:2px dashed var(--border);border-radius:var(--r);padding:20px 16px;text-align:center;cursor:pointer;transition:.2s}
+.up-card:hover,.up-card.drag{border-color:var(--p1);background:#eff6ff}
+.up-card.ok1{border:2px solid #2563eb;background:#eff6ff}
+.up-card.ok2{border:2px solid #7c3aed;background:#f5f3ff}
+.up-card.ok3{border:2px solid #059669;background:#f0fdf4}
+.fbdg{display:inline-block;padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;margin-bottom:7px}
+.fb1{background:#dbeafe;color:#1d4ed8}.fb2{background:#e0e7ff;color:#4338ca}.fb3{background:#d1fae5;color:#065f46}
+.up-icon{font-size:24px;margin-bottom:5px}.up-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.up-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+.up-input{display:none}
+.up-fname{font-size:11px;font-weight:600;color:var(--p1);word-break:break-all;margin-top:3px}
+.up-status{font-size:11px;color:var(--ok);font-weight:600;margin-top:2px}
+.sheet-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
+.stag{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
+
+.fmt-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:10px}
+.fmt-panel summary{font-size:12px;font-weight:600;cursor:pointer;color:var(--muted)}
+.fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.fmt-item{background:var(--bg);border-radius:8px;padding:10px 12px}
+.fmt-item strong{font-size:11px;display:block;margin-bottom:4px}
+.fmt-item p{font-size:10px;color:var(--muted);line-height:1.55}
+.fmt-item code{background:#e2e8f0;padding:1px 4px;border-radius:3px;font-size:10px}
+
+.run-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:.2s;display:none}
+.run-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.4)}
+.run-btn.show{display:block}
+.loading{display:none;text-align:center;padding:40px}
+.loading.show{display:block}
+.spin{width:34px;height:34px;border:4px solid var(--border);border-top-color:var(--p1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:14px}
+.sum-card{background:var(--card);border-radius:var(--r);padding:13px 10px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:3px solid;text-align:center}
+.sum-card:nth-child(1){border-color:var(--p1)}.sum-card:nth-child(2){border-color:var(--ok)}
+.sum-card:nth-child(3){border-color:var(--warn)}.sum-card:nth-child(4){border-color:var(--err)}
+.sum-card:nth-child(5){border-color:var(--p2)}.sum-card:nth-child(6){border-color:var(--info)}
+.sum-lbl{font-size:10px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.sum-val{font-size:20px;font-weight:700}.sum-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* DASH */
+.dash{display:none}.dash.show{display:block}
+.tab-nav{display:flex;gap:3px;background:var(--card);padding:4px;border-radius:var(--r);box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{flex:1;padding:8px 10px;border:none;background:transparent;border-radius:7px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:.2s;white-space:nowrap;min-width:0}
+.tab-btn:hover{background:var(--bg);color:var(--txt)}
+.tab-btn.on{background:var(--p1);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,.3)}
+.tab-btn.dim{opacity:.35;pointer-events:none}
+.tab-pane{display:none}.tab-pane.on{display:block}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
+.card-ttl{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-ttl small{font-size:10px;font-weight:400;color:var(--muted)}
+.no-data{text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;background:var(--bg);border-radius:8px}
+.no-data em{font-size:26px;display:block;margin-bottom:8px;font-style:normal}
+
+.g2{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.g11{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ch{position:relative;height:300px}
+.ch.tall{height:400px}.ch.sm{height:220px}
+
+/* CLASS SELECTOR */
+.cls-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.cls-bar label{font-size:11px;font-weight:600;color:var(--muted);margin-right:4px}
+.cls-btn{padding:5px 14px;border:1px solid var(--border);background:#fff;border-radius:100px;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;color:var(--muted)}
+.cls-btn:hover{border-color:var(--p1);color:var(--p1)}
+.cls-btn.on{background:var(--p1);border-color:var(--p1);color:#fff}
+
+/* DIFF MINI */
+.diff-row{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px}
+.diff-mini{background:var(--bg);border-radius:8px;padding:9px;text-align:center}
+.diff-num{font-size:20px;font-weight:700}.diff-lbl{font-size:9px;color:var(--muted);margin-top:1px}
+.diff-pct{font-size:10px;font-weight:600;margin-top:2px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:#f8fafc;padding:8px 9px;text-align:center;font-weight:600;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{background:#f1f5f9}
+th.sa::after{content:' ↑'}th.sd::after{content:' ↓'}
+td{padding:6px 9px;text-align:center;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+
+/* BADGES */
+.bdg{display:inline-block;padding:2px 7px;border-radius:100px;font-size:9px;font-weight:600}
+.b-ve{background:#dcfce7;color:#15803d}.b-e{background:#d1fae5;color:#059669}
+.b-m{background:#fef9c3;color:#92400e}.b-h{background:#fed7aa;color:#c2410c}
+.b-vh{background:#fee2e2;color:#dc2626}
+.b-su{background:#dbeafe;color:#1d4ed8}.b-u{background:#e0e7ff;color:#4338ca}
+.b-mi{background:#f3e8ff;color:#7e22ce}.b-y{background:#fce7f3;color:#be185d}
+.b-ga{background:#fee2e2;color:#dc2626}
+.b-hw{background:#dc2626;color:#fff;font-weight:700;padding:3px 9px}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat-item{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:var(--bg);border-radius:7px}
+.stat-lbl{font-size:11px;color:var(--muted)}.stat-val{font-size:12px;font-weight:700;text-align:right;line-height:1.4}
+
+.pb{width:100%;height:4px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:3px}
+.pf{height:100%;border-radius:3px}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.exp-btns{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+.exp-btn{padding:4px 11px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:10px;cursor:pointer;color:var(--muted);transition:.2s}
+.exp-btn:hover{background:var(--bg);color:var(--txt);border-color:var(--p1)}
+.exp-btn.pdf{border-color:#ef4444;color:#ef4444}
+.exp-btn.pdf:hover{background:#fef2f2;border-color:#dc2626}
+.pdf-all-bar{display:flex;justify-content:flex-end;margin-bottom:10px;gap:8px}
+.pdf-all-btn{padding:7px 16px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:5px}
+.pdf-all-btn:hover{background:#dc2626;transform:translateY(-1px);box-shadow:0 3px 8px rgba(239,68,68,.4)}
+.pdf-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;display:none}
+.pdf-overlay.show{display:flex}
+.pdf-box{background:#fff;border-radius:14px;padding:28px 36px;text-align:center;min-width:260px}
+.pdf-box p{font-size:13px;color:var(--muted);margin-top:8px}
+.src-bdg{display:inline-block;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:600;margin-bottom:10px}
+.sb1{background:#dbeafe;color:#1d4ed8}.sb2{background:#e0e7ff;color:#4338ca}.sb3{background:#d1fae5;color:#065f46}
+
+.toast{position:fixed;top:18px;right:18px;background:var(--txt);color:#fff;padding:9px 15px;border-radius:9px;font-size:12px;z-index:999;opacity:0;transform:translateY(-6px);transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* DIFFICULTY CLASSIFY */
+.diff-classify{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.diff-group{border-radius:10px;padding:12px 10px}
+.diff-g-ttl{font-size:11px;font-weight:700;margin-bottom:3px}
+.diff-g-count{font-size:26px;font-weight:800;line-height:1;margin-bottom:2px}
+.diff-g-avgcr{font-size:10px;opacity:.8;margin-bottom:8px}
+.diff-g-sep{width:100%;height:1px;background:rgba(0,0,0,.12);margin:6px 0}
+.diff-q-list{display:flex;flex-wrap:wrap;gap:3px}
+.diff-q-chip{background:rgba(255,255,255,.6);border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;cursor:default}
+.diff-q-chip:hover{background:rgba(255,255,255,.9)}
+/* DIFF STAT SUMMARY */
+.diff-stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
+.diff-stat-cell{background:var(--bg);border-radius:7px;padding:7px 9px;text-align:center}
+.dsc-lbl{font-size:9px;color:var(--muted);margin-bottom:2px}
+.dsc-val{font-size:13px;font-weight:700}
+@media(max-width:1100px){.sum-grid{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.diff-classify{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.wrap{padding:10px}.up-grid{grid-template-columns:1fr}.sum-grid{grid-template-columns:repeat(2,1fr)}.g11,.g3{grid-template-columns:1fr}.diff-classify{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-icon">📊</div>
+  <div><h1>시험 성적 분석 대시보드</h1>
+  <p>문항분석표 · 성적분포도 · 종합성적현황 업로드 → 자동 분석</p></div>
+  <div class="hdr-right"><button class="reset-btn" onclick="resetAll()">🔄 초기화</button></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+
+<!-- UPLOAD -->
+<div class="up-grid">
+  <div class="up-card" id="drop0" onclick="document.getElementById('f0').click()">
+    <input type="file" class="up-input" id="f0" accept=".xlsx,.xls" onchange="loadFile(this,0)">
+    <div class="fbdg fb1">파일 1</div>
+    <div class="up-icon" id="ico0">📋</div>
+    <div class="up-title">문항분석표</div>
+    <div class="up-desc">40문항별 정답률·변별도·난이도·<br>평균·표준편차 데이터</div>
+    <div class="up-fname" id="fn0"></div><div class="up-status" id="st0"></div>
+  </div>
+  <div class="up-card" id="drop1" onclick="document.getElementById('f1').click()">
+    <input type="file" class="up-input" id="f1" accept=".xlsx,.xls" onchange="loadFile(this,1)">
+    <div class="fbdg fb2">파일 2</div>
+    <div class="up-icon" id="ico1">📊</div>
+    <div class="up-title">성적분포도</div>
+    <div class="up-desc">0점~100점 성적 분포 데이터<br>(점수별 인원수 또는 개인 점수)</div>
+    <div class="up-fname" id="fn1"></div><div class="up-status" id="st1"></div>
+  </div>
+  <div class="up-card" id="drop2" onclick="document.getElementById('f2').click()">
+    <input type="file" class="up-input" id="f2" accept=".xlsx,.xls" onchange="loadFile(this,2)">
+    <div class="fbdg fb3">파일 3</div>
+    <div class="up-icon" id="ico2">🗂️</div>
+    <div class="up-title">종합성적현황</div>
+    <div class="up-desc">시트명 = 반 이름 · 40점 만점<br>전체 시트 자동 읽기</div>
+    <div class="up-fname" id="fn2"></div><div class="up-status" id="st2"></div>
+    <div class="sheet-tags" id="stags2"></div>
+  </div>
+</div>
+
+<details class="fmt-panel">
+  <summary>📌 파일 형식 가이드 (클릭)</summary>
+  <div class="fmt-grid">
+    <div class="fmt-item"><strong>📋 파일1 · 문항분석표</strong>
+      <p>1행: 헤더, 2행↓: 문항1~40<br>
+      열: <code>번호|정답률|변별도|난이도|평균|표준편차</code><br>
+      정답률·평균은 0~1 또는 0~100 자동 인식<br>
+      난이도는 숫자 또는 텍스트(쉬움/보통 등)</p>
+    </div>
+    <div class="fmt-item"><strong>📊 파일2 · 성적분포도</strong>
+      <p>형식① 빈도표: <code>점수|인원수</code><br>
+      형식② 개인별: <code>번호|이름|점수</code><br>
+      점수 범위 0~100 (두 형식 자동 인식)</p>
+    </div>
+    <div class="fmt-item"><strong>🗂️ 파일3 · 종합성적현황</strong>
+      <p>시트명 = 반 이름 (1반, 2반…)<br>
+      열: <code>번호|이름|점수</code> (40점 만점)<br>
+      시트 수 제한 없음 · 반별/전체 선택 분석</p>
+    </div>
+  </div>
+</details>
+
+<button class="run-btn" id="runBtn" onclick="runAnalysis()">📊 성적 분석 시작</button>
+<div class="loading" id="loading"><div class="spin"></div><p>데이터 분석 중…</p></div>
+
+<!-- DASHBOARD -->
+<div class="dash" id="dash">
+  <!-- SUMMARY (파일3 기반) -->
+  <div class="sum-grid">
+    <div class="sum-card"><div class="sum-lbl">총 학생 수</div><div class="sum-val" id="c-n">-</div><div class="sum-sub" id="c-cls">-</div></div>
+    <div class="sum-card"><div class="sum-lbl">평균 점수</div><div class="sum-val" id="c-avg">-</div><div class="sum-sub" id="c-avg-sub">점/40</div></div>
+    <div class="sum-card"><div class="sum-lbl">최고점</div><div class="sum-val" id="c-max">-</div><div class="sum-sub" id="c-max-sub">(환산 -점)</div></div>
+    <div class="sum-card"><div class="sum-lbl">최저점</div><div class="sum-val" id="c-min">-</div><div class="sum-sub" id="c-min-sub">(환산 -점)</div></div>
+    <div class="sum-card"><div class="sum-lbl">표준편차</div><div class="sum-val" id="c-sd">-</div><div class="sum-sub">점(원점수)</div></div>
+    <div class="sum-card"><div class="sum-lbl" id="c-pass-lbl">통과율 (환산 70점↑)</div><div class="sum-val" id="c-pass">-</div><div class="sum-sub">%</div></div>
+  </div>
+
+  <!-- PDF 로딩 오버레이 -->
+  <div class="pdf-overlay" id="pdfOverlay">
+    <div class="pdf-box">
+      <div class="spin" style="margin:0 auto 10px"></div>
+      <strong id="pdfStatus">PDF 생성 중…</strong>
+      <p id="pdfSub">잠시만 기다려 주세요</p>
+    </div>
+  </div>
+
+  <!-- 전체 PDF 버튼 -->
+  <div class="pdf-all-bar">
+    <button class="pdf-all-btn" onclick="exportAllPDF()">📄 전체 분석 PDF 저장</button>
+    <button class="pdf-all-btn" style="background:#64748b" onclick="exportCurrentTabPDF()">📄 현재 탭 PDF 저장</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn on"  onclick="tab('items',this)"  id="tbtn-items">📋 문항분석 &amp; 난이도</button>
+    <button class="tab-btn"     onclick="tab('scores',this)" id="tbtn-scores">📊 성적분포</button>
+    <button class="tab-btn"     onclick="tab('top10',this)"  id="tbtn-top10">🔴 오답 TOP 10</button>
+    <button class="tab-btn"     onclick="tab('disc',this)"   id="tbtn-disc">🎯 문항 변별도</button>
+    <button class="tab-btn"     onclick="tab('compare',this)"id="tbtn-compare">⚖️ 반별 분석</button>
+    <button class="tab-btn"     onclick="tab('rank',this)"   id="tbtn-rank">🏆 성적 현황</button>
+  </div>
+
+  <!-- ① 문항분석 (파일1) -->
+  <div class="tab-pane on" id="tp-items">
+    <span class="src-bdg sb1">📋 파일1 · 문항분석표</span>
+    <div class="diff-row" id="diffRow"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-ttl">📊 문항별 정답률 <small>색상 = 난이도</small></div>
+        <div class="ch tall"><canvas id="chItem"></canvas></div>
+        <div class="exp-btns"><button class="exp-btn" onclick="savePng('chItem')">PNG</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-items','문항분석_난이도')">PDF</button></div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-ttl">🥧 난이도 분포</div>
+          <div class="ch sm"><canvas id="chDiffPie"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">📈 정답률 분포</div>
+          <div class="ch sm"><canvas id="chCrDist"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <!-- 난이도 분류 카드 -->
+    <div class="card">
+      <div class="card-ttl">🎯 문항별 난이도 분류 <small>난이도 그룹별 문항 목록 및 평균 정답률</small></div>
+      <div class="diff-classify" id="diffClassify"></div>
+    </div>
+
+    <!-- 난이도 순 정렬 차트 + 통계 -->
+    <div class="g2">
+      <div class="card">
+        <div class="card-ttl">📉 난이도 순 정렬 <small>정답률 오름차순 — 어려운 문항 → 쉬운 문항</small></div>
+        <div class="ch tall"><canvas id="chDiffSorted"></canvas></div>
+        <div class="exp-btns"><button class="exp-btn" onclick="savePng('chDiffSorted')">PNG</button></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">📊 난이도별 통계 요약</div>
+        <div id="diffStatSummary"></div>
+      </div>
+    </div>
+
+    <!-- 상세표 -->
+    <div class="card">
+      <div class="card-ttl">📋 문항 분석 상세표 <small>헤더 클릭 정렬</small></div>
+      <div class="tbl-wrap"><table id="tItem">
+        <thead><tr>
+          <th onclick="sortTbl('tItem',0)">문항</th>
+          <th onclick="sortTbl('tItem',1)">정답률</th>
+          <th onclick="sortTbl('tItem',2)">오답률</th>
+          <th onclick="sortTbl('tItem',3)">변별도</th>
+          <th onclick="sortTbl('tItem',4)">평균</th>
+          <th onclick="sortTbl('tItem',5)">표준편차</th>
+          <th>난이도</th>
+        </tr></thead>
+        <tbody id="tbItem"></tbody>
+      </table></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tItem','문항분석')">CSV</button></div>
+    </div>
+  </div>
+
+  <!-- ② 성적분포 (파일2) -->
+  <div class="tab-pane" id="tp-scores">
+    <span class="src-bdg sb2">📊 파일2 · 성적분포도 (0~100점)</span>
+    <div class="g2">
+      <div class="card">
+        <div class="card-ttl">📊 성적 분포 히스토그램</div>
+        <div class="ch tall"><canvas id="chHist"></canvas></div>
+        <div class="exp-btns"><button class="exp-btn" onclick="savePng('chHist')">PNG</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-scores','성적분포')">PDF</button></div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-ttl">🎓 성취수준 분포</div>
+          <div class="ch sm"><canvas id="chGrade"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">📊 통계 요약</div>
+          <div class="stat-grid" id="statGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">📈 누적 분포 곡선</div>
+      <div class="ch"><canvas id="chCdf"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ③ 오답 TOP10 (파일1) -->
+  <div class="tab-pane" id="tp-top10">
+    <span class="src-bdg sb1">📋 파일1 · 문항분석표 — 정답률 최저 10문항</span>
+    <div class="g2">
+      <div class="card">
+        <div class="card-ttl">🔴 정답률 최저 10문항</div>
+        <div class="ch tall"><canvas id="chTop10"></canvas></div>
+        <div class="exp-btns"><button class="exp-btn" onclick="savePng('chTop10')">PNG</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-top10','오답TOP10')">PDF</button></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">📊 오답률 구간 분포</div>
+        <div class="ch"><canvas id="chWrDist"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">📋 오답 TOP 10 상세</div>
+      <div class="tbl-wrap"><table id="tTop10">
+        <thead><tr>
+          <th>순위</th><th>문항</th>
+          <th onclick="sortTbl('tTop10',2)">정답률</th>
+          <th onclick="sortTbl('tTop10',3)">오답률</th>
+          <th onclick="sortTbl('tTop10',4)">변별도</th>
+          <th>난이도</th>
+        </tr></thead>
+        <tbody id="tbTop10"></tbody>
+      </table></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tTop10','오답TOP10')">CSV</button></div>
+    </div>
+  </div>
+
+  <!-- ④ 변별도 (파일1) -->
+  <div class="tab-pane" id="tp-disc">
+    <span class="src-bdg sb1">📋 파일1 · 문항분석표</span>
+    <div class="g2">
+      <div class="card">
+        <div class="card-ttl">🎯 문항별 변별도 <small>D ≥ 0.4 우수 · 0.3 양호 · 0.2 보통 · 미만 개선필요</small></div>
+        <div class="ch tall"><canvas id="chDisc"></canvas></div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>우수 ≥0.4</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#84cc16"></div>양호 ≥0.3</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#eab308"></div>보통 ≥0.2</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>개선필요 &lt;0.2</div>
+        </div>
+        <div class="exp-btns"><button class="exp-btn" onclick="savePng('chDisc')">PNG</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-disc','문항변별도')">PDF</button></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">🔵 정답률 vs 변별도 <small>이상적: 우상단</small></div>
+        <div class="ch"><canvas id="chScatter"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">📋 변별도 상세표</div>
+      <div class="tbl-wrap"><table id="tDisc">
+        <thead><tr>
+          <th onclick="sortTbl('tDisc',0)">문항</th>
+          <th onclick="sortTbl('tDisc',1)">정답률</th>
+          <th onclick="sortTbl('tDisc',2)">변별도</th>
+          <th>평가</th>
+          <th onclick="sortTbl('tDisc',4)">평균</th>
+          <th onclick="sortTbl('tDisc',5)">표준편차</th>
+        </tr></thead>
+        <tbody id="tbDisc"></tbody>
+      </table></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tDisc','변별도')">CSV</button></div>
+    </div>
+  </div>
+
+  <!-- ⑤ 반별 분석 (파일3) -->
+  <div class="tab-pane" id="tp-compare">
+    <span class="src-bdg sb3">🗂️ 파일3 · 종합성적현황 (40점 만점)</span>
+    <div class="cls-bar" id="clsBar1">
+      <label>반 선택:</label>
+    </div>
+    <div class="g11">
+      <div class="card">
+        <div class="card-ttl">📊 반별 평균·중앙값·표준편차</div>
+        <div class="ch"><canvas id="chCmpAvg"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">🎓 반별 성취수준 분포</div>
+        <div class="ch"><canvas id="chCmpGrade"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">📊 반별 성적 분포 (히스토그램 비교)</div>
+      <div class="ch tall"><canvas id="chCmpHist"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">📋 반별 통계 비교</div>
+      <div class="tbl-wrap"><table id="tCmp">
+        <thead><tr>
+          <th>반</th><th>학생수</th>
+          <th onclick="sortTbl('tCmp',2)">평균</th>
+          <th onclick="sortTbl('tCmp',3)">중앙값</th>
+          <th onclick="sortTbl('tCmp',4)">표준편차</th>
+          <th onclick="sortTbl('tCmp',5)">최고점</th>
+          <th onclick="sortTbl('tCmp',6)">최저점</th>
+          <th onclick="sortTbl('tCmp',7)">통과율</th>
+        </tr></thead>
+        <tbody id="tbCmp"></tbody>
+      </table></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tCmp','반별비교')">CSV</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-compare','반별분석')">PDF</button></div>
+    </div>
+  </div>
+
+  <!-- ⑥ 성적 현황 (파일3) -->
+  <div class="tab-pane" id="tp-rank">
+    <span class="src-bdg sb3">🗂️ 파일3 · 종합성적현황</span>
+    <div class="cls-bar" id="clsBar2"><label>반 선택:</label></div>
+    <div class="card">
+      <div class="card-ttl">🏆 성적 현황 <small id="rankTitle">전체</small></div>
+      <div class="tbl-wrap"><table id="tRank">
+        <thead><tr>
+          <th onclick="sortTbl('tRank',0)">석차</th>
+          <th onclick="sortTbl('tRank',1)">반</th>
+          <th onclick="sortTbl('tRank',2)">번호</th>
+          <th onclick="sortTbl('tRank',3)">이름</th>
+          <th onclick="sortTbl('tRank',4)">점수(40점)</th>
+          <th onclick="sortTbl('tRank',5)">환산점수(100점)</th>
+          <th>성취수준</th>
+        </tr></thead>
+        <tbody id="tbRank"></tbody>
+      </table></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tRank','성적현황')">CSV</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-rank','성적현황')">PDF</button></div>
+    </div>
+  </div>
+</div><!-- /dash -->
+</div><!-- /wrap -->
+
+<script>
+// ═══════════════════════════
+// CONSTANTS
+// ═══════════════════════════
+const MAX_SCORE = 40;
+const PASS_RAW  = 28;   // 통과 기준: 환산 70점 = 28/40
+
+// ═══════════════════════════
+// STATE
+// ═══════════════════════════
+const S = { raw:[null,null,null], f1:null, f2:null, f3:null,
+  f3Total:null,  // Sheet1 = 전체 학생 데이터
+  charts:{}, activeClass:'all' };
+
+// ═══════════════════════════
+// FILE UPLOAD
+// ═══════════════════════════
+function loadFile(inp, slot) {
+  const f = inp.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = e => {
+    try {
+      const buf = new Uint8Array(e.target.result);
+      const wb  = XLSX.read(buf, {type:'array'});
+      if(slot === 2) {
+        const sheets = wb.SheetNames
+          .map(n => ({name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:'',raw:false})}))
+          .filter(s => s.rows.length > 0);
+        S.raw[2] = {name:f.name, sheets};
+        document.getElementById('ico2').textContent = '✅';
+        document.getElementById('st2').textContent  = `${sheets.length}개 반, 총 ${sheets.reduce((n,s)=>n+s.rows.length,0)}행`;
+        document.getElementById('stags2').innerHTML = sheets.map(s=>`<span class="stag">${s.name}</span>`).join('');
+      } else {
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:'',raw:false});
+        S.raw[slot] = {name:f.name, rows};
+        document.getElementById(`ico${slot}`).textContent = '✅';
+        document.getElementById(`st${slot}`).textContent  = `${rows.length}행 로드됨`;
+      }
+      document.getElementById(`fn${slot}`).textContent  = f.name;
+      document.getElementById(`drop${slot}`).className  = `up-card ok${slot+1}`;
+      if(S.raw.some(r=>r)) document.getElementById('runBtn').classList.add('show');
+      toast(`✅ ${f.name} 업로드 완료`);
+    } catch(ex){ toast('❌ '+ex.message); }
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+[0,1,2].forEach(i=>{
+  const el=document.getElementById(`drop${i}`);
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag')});
+  el.addEventListener('dragleave',()=>el.classList.remove('drag'));
+  el.addEventListener('drop',e=>{
+    e.preventDefault();el.classList.remove('drag');
+    const f=e.dataTransfer.files[0];if(!f)return;
+    const inp=document.getElementById(`f${i}`);
+    const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;
+    loadFile(inp,i);
+  });
+});
+
+function resetAll(){
+  [0,1,2].forEach(i=>{
+    S.raw[i]=null;
+    document.getElementById(`ico${i}`).textContent=['📋','📊','🗂️'][i];
+    document.getElementById(`fn${i}`).textContent='';
+    document.getElementById(`st${i}`).textContent='';
+    document.getElementById(`drop${i}`).className='up-card';
+    document.getElementById(`f${i}`).value='';
+  });
+  document.getElementById('stags2').innerHTML='';
+  Object.values(S.charts).forEach(c=>{try{c.destroy()}catch(e){}});
+  S.charts={};S.f1=S.f2=S.f3=S.f3Total=null;S.activeClass='all';
+  document.getElementById('runBtn').classList.remove('show');
+  document.getElementById('dash').classList.remove('show');
+}
+
+// ═══════════════════════════
+// PARSE FILE 1: 문항분석표 (pre-computed stats)
+// ═══════════════════════════
+function parseFile1(rows) {
+  if(!rows||!rows.length) return null;
+  const hdrs = Object.keys(rows[0]);
+
+  // 헤더 정규화
+  const hn = h => h.toString().replace(/[\s()（）%\[\]·\-_]/g,'').toLowerCase();
+
+  // 유일 감지: 긴 패턴 우선, 이미 배정된 열 건너뜀
+  const taken = new Set();
+  function findUniq(...pats) {
+    const sorted = [...pats].sort((a,b)=>b.length-a.length);
+    const col = hdrs.find(h => !taken.has(h) && sorted.some(p=>hn(h).includes(p)));
+    if(col) taken.add(col);
+    return col||null;
+  }
+
+  // ── 이름 기반 감지 ──────────────────────────
+  const qCol   = findUniq('문항번호','번호','순번','문항no','item');
+  // '정답' 단독 제외 — 정답수/정답지와 혼동 방지
+  const crCol  = findUniq('정답률','정답율','정답비율','correctrate','correct');
+  const discCol= findUniq('문항변별도','변별도','변별력','변별지수','discrimination','disc','변별','d지수','점이분');
+  const diffCol= findUniq('난이도','difficulty','level','난이');
+  const avgCol = findUniq('평균','mean','average','avg');
+  const sdCol  = findUniq('표준편차','표준','stddev','deviation','편차');
+
+  // ── 수치형 열 목록 (순차 정수 열 제외) ────────
+  const numericCols = hdrs.filter(h => {
+    if(taken.has(h) || h===qCol) return false;
+    const vals = rows.map(r=>parseFloat(r[h])).filter(v=>!isNaN(v));
+    if(vals.length < Math.floor(rows.length*0.6)) return false;
+    // 1,2,3… 같은 순차 정수(문항번호)는 제외
+    const isSeq = vals.every((v,i)=>i===0||Math.abs(v-vals[i-1]-1)<0.01);
+    return !isSeq;
+  });
+
+  // ── positional fallback: 미감지 열에 순서대로 배정 ──
+  const res = {cr:crCol, disc:discCol, avg:avgCol, sd:sdCol};
+  let fi = 0;
+  ['cr','disc','avg','sd'].forEach(k=>{ if(!res[k]&&numericCols[fi]) res[k]=numericCols[fi++]; });
+  const {cr:rCrCol, disc:rDiscCol, avg:rAvgCol, sd:rSdCol} = res;
+
+  // ── 스케일 판별: 최대값 > 1 이면 0~100 스케일 ──
+  function colMax(col) {
+    if(!col) return 0;
+    const v=rows.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v)&&isFinite(v));
+    return v.length?Math.max(...v):0;
+  }
+  const crPct   = colMax(rCrCol)  > 1;
+  const discPct = colMax(rDiscCol) > 1;
+  const avgPct  = colMax(rAvgCol)  > 1;
+
+  // ── 난이도 정규화 ────────────────────────────
+  function normDiff(raw) {
+    if(raw==null||String(raw).trim()==='') return null;
+    const str=String(raw).trim(), n=parseFloat(str);
+    if(!isNaN(n)){
+      if(n>=1&&n<=5) return ['매우 쉬움','쉬움','보통','어려움','매우 어려움'][Math.round(n)-1];
+      return diffLevel(1-(n>1?n/100:n)).lbl;
+    }
+    const l=str.toLowerCase().replace(/\s/g,'');
+    if(/매우쉬움|매우쉬|veryeasy|최상/.test(l))  return '매우 쉬움';
+    if(/^쉬움$|^쉬$|^easy$|^상$/.test(l))         return '쉬움';
+    if(/보통|^중$|normal|medium/.test(l))           return '보통';
+    if(/매우어려움|매우어렵|veryhard|최하/.test(l)) return '매우 어려움';
+    if(/어려움|어렵|^하$|^hard$|difficult/.test(l)) return '어려움';
+    return null;
+  }
+  function diffStyle(lbl) {
+    return lbl==='매우 쉬움'?{cls:'b-ve',col:'#16a34a'}
+          :lbl==='쉬움'     ?{cls:'b-e', col:'#22c55e'}
+          :lbl==='보통'     ?{cls:'b-m', col:'#f59e0b'}
+          :lbl==='어려움'   ?{cls:'b-h', col:'#f97316'}
+          :lbl==='매우 어려움'?{cls:'b-vh',col:'#dc2626'}
+          :                  {cls:'',    col:'#94a3b8'};
+  }
+
+  // ── 행별 파싱 ───────────────────────────────
+  const items = rows.map((row,idx)=>{
+    const rawNum = qCol ? String(row[qCol]).replace(/[번항문\s]/g,'').trim() : String(idx+1);
+    const qName  = `문항${rawNum||idx+1}`;
+
+    let cr = rCrCol ? parseFloat(row[rCrCol]) : null;
+    if(cr!=null&&!isNaN(cr)) cr = crPct?cr/100:cr; else cr=null;
+
+    let disc = rDiscCol ? parseFloat(row[rDiscCol]) : null;
+    if(disc!=null&&!isNaN(disc)) disc = discPct?disc/100:disc; else disc=null;
+
+    let avg = rAvgCol ? parseFloat(row[rAvgCol]) : null;
+    if(avg!=null&&isNaN(avg)) avg=null;
+    if(avg!=null&&avgPct) avg/=100;
+
+    let sd = rSdCol ? parseFloat(row[rSdCol]) : null;
+    if(sd!=null&&isNaN(sd)) sd=null;
+    if(sd!=null&&sd>2) sd/=100;
+
+    let diffLbl = normDiff(diffCol?row[diffCol]:null);
+    if(!diffLbl&&cr!=null) diffLbl=diffLevel(1-cr).lbl;
+    const st=diffStyle(diffLbl);
+    return {qName,cr,wr:cr!=null?1-cr:null,disc,avg,sd,diffLbl,diffCls:st.cls,diffColor:st.col};
+  });
+
+  // ── 파싱 후 cr 검증 ──────────────────────────
+  // cr이 여전히 >1 이면 다시 /100
+  const crVals = items.filter(i=>i.cr!=null).map(i=>i.cr);
+  if(crVals.length && Math.max(...crVals)>1)
+    items.forEach(it=>{ if(it.cr!=null){it.cr/=100;it.wr=1-it.cr;} });
+  // cr이 너무 작으면 *100
+  const crVals2 = items.filter(i=>i.cr!=null).map(i=>i.cr);
+  if(crVals2.length && Math.max(...crVals2)<0.02 && Math.max(...crVals2)>0)
+    items.forEach(it=>{ if(it.cr!=null){it.cr*=100;it.wr=1-it.cr;} });
+  // 보정 후 모든 항목의 난이도·색상 재계산 (cr 보정값 기준으로 재설정)
+  items.forEach(it=>{
+    if(it.cr!=null) it.diffLbl=diffLevel(1-it.cr).lbl;  // cr 기반으로 항상 재계산
+    const s=diffStyle(it.diffLbl);
+    it.diffCls=s.cls; it.diffColor=s.col;
+  });
+
+  const valid=items.filter(i=>i.cr!=null||i.disc!=null||i.diffLbl!=null);
+  if(!valid.length) return null;
+  return {type:'precomputed',items:valid,
+    detected:{qCol,crCol:rCrCol,discCol:rDiscCol,diffCol,avgCol:rAvgCol,sdCol:rSdCol}};
+}
+
+
+// ═══════════════════════════
+// PARSE FILE 2: 성적분포도 (0-100)
+// ═══════════════════════════
+function parseFile2(rows) {
+  if(!rows||!rows.length) return null;
+  const hdrs = Object.keys(rows[0]);
+  const find = (...pats) => hdrs.find(h=>{
+    const hl=h.toString().replace(/[\s()（）%]/g,'').toLowerCase();
+    return pats.some(p=>hl.includes(p));
+  });
+  const scoreCol = find('점수','score','점','성적','grade','raw');
+  const countCol = find('인원','빈도','명수','학생수','count','freq','num','인원수','명');
+  const rateCol  = find('비율','율','rate','percent','퍼센트');
+  const cumCol   = find('누적','cumul','cum');
+
+  if(scoreCol && countCol) {
+    // Frequency table
+    const dist = rows.map(r=>({
+      score:parseFloat(r[scoreCol]),
+      count:parseInt(r[countCol])||0,
+      rate: rateCol?parseFloat(r[rateCol])||0:0,
+      cum:  cumCol?parseFloat(r[cumCol])||0:0
+    })).filter(d=>!isNaN(d.score));
+    if(dist.length) return {type:'freq',dist};
+  }
+
+  // Individual scores
+  const numCol = hdrs.find(h=>{
+    const vals=rows.map(r=>parseFloat(r[h])).filter(v=>!isNaN(v));
+    return vals.length>rows.length*.5&&Math.max(...vals)<=100&&Math.min(...vals)>=0;
+  });
+  if(numCol){
+    const scores=rows.map(r=>parseFloat(r[numCol])).filter(v=>!isNaN(v));
+    return {type:'individual',scores};
+  }
+  return null;
+}
+
+// ═══════════════════════════
+// PARSE FILE 3: 종합성적현황 (multi-sheet, 40점 만점)
+// ═══════════════════════════
+function parseClassSheet(rows, label) {
+  if(!rows||!rows.length) return null;
+  const hdrs=Object.keys(rows[0]);
+  const find=(...pats)=>hdrs.find(h=>{
+    const hl=h.toString().replace(/[\s()（）]/g,'').toLowerCase();
+    return pats.some(p=>hl.includes(p));
+  });
+  const idCol  =find('번호','no','num','#','순번','학번');
+  const nameCol=find('이름','성명','name','학생명');
+  const scoreCol=find('점수','score','raw','원점수','성적');
+
+  // Fallback: find first numeric column that looks like scores (0-40)
+  let sCol=scoreCol;
+  if(!sCol){
+    sCol=hdrs.find(h=>{
+      const vals=rows.map(r=>parseFloat(r[h])).filter(v=>!isNaN(v));
+      return vals.length>rows.length*.5&&Math.max(...vals)<=MAX_SCORE+1&&Math.min(...vals)>=0;
+    });
+  }
+  if(!sCol) return null;
+
+  const students=rows.map((row,idx)=>{
+    const total=parseFloat(row[sCol]);
+    if(isNaN(total)) return null;
+    return {
+      id:  idCol   ? row[idCol]   : idx+1,
+      name:nameCol ? row[nameCol] : `학생${idx+1}`,
+      total: Math.min(total, MAX_SCORE),
+      pct: Math.min(100,(total/MAX_SCORE)*100),
+      cls: label
+    };
+  }).filter(Boolean);
+
+  return students.length ? {label,students} : null;
+}
+
+// ═══════════════════════════
+// STATS HELPERS
+// ═══════════════════════════
+function calcStats(vals) {
+  if(!vals.length) return {};
+  const n=vals.length, s=[...vals].sort((a,b)=>a-b);
+  const mean=vals.reduce((a,b)=>a+b,0)/n;
+  const sd=Math.sqrt(vals.reduce((v,x)=>v+(x-mean)**2,0)/n);
+  const med=n%2?s[Math.floor(n/2)]:(s[n/2-1]+s[n/2])/2;
+  return {n,mean,sd,med,min:s[0],max:s[n-1],
+    q1:s[Math.floor(n*.25)],q3:s[Math.floor(n*.75)],
+    passRate:vals.filter(v=>v>=PASS_RAW).length/n*100};
+}
+
+// Stats from frequency dist table
+function statsFromFreq(dist) {
+  // 파일이 내림차순으로 저장된 경우도 대비해 항상 오름차순 정렬
+  const asc = [...dist].sort((a,b)=>a.score-b.score);
+  const n   = asc.reduce((s,d)=>s+d.count,0);
+  if(!n) return {};
+  const mean = asc.reduce((s,d)=>s+d.score*d.count,0)/n;
+  const sd   = Math.sqrt(asc.reduce((s,d)=>s+d.count*(d.score-mean)**2,0)/n);
+  let cum=0,med=0,q1=0,q3=0;
+  for(const d of asc){
+    cum+=d.count;
+    if(!q1 &&cum>=n*.25) q1=d.score;
+    if(!med&&cum>=n*.5)  med=d.score;
+    if(!q3 &&cum>=n*.75) q3=d.score;
+  }
+  // 통과 기준: PASS_RAW(28점)를 100점 환산으로 변환 → 70점
+  // File 3 calcStats의 PASS_RAW 기준과 동일하게 적용
+  const passThresh = PASS_RAW * 100 / MAX_SCORE;  // = 70
+  const passN = asc.filter(d=>d.score>=passThresh).reduce((s,d)=>s+d.count,0);
+  return {n,mean,sd,med,
+    min:asc[0].score, max:asc[asc.length-1].score,
+    q1,q3,passRate:passN/n*100};
+}
+
+function diffLevel(wr){
+  if(wr<.15) return{lbl:'매우 쉬움',cls:'b-ve',col:'#16a34a'};
+  if(wr<.30) return{lbl:'쉬움',     cls:'b-e', col:'#22c55e'};
+  if(wr<.60) return{lbl:'보통',     cls:'b-m', col:'#f59e0b'};
+  if(wr<.80) return{lbl:'어려움',   cls:'b-h', col:'#f97316'};
+  return          {lbl:'매우 어려움',cls:'b-vh',col:'#dc2626'};
+}
+// p = 환산점수(100점 기준) = (원점수 / 40) × 100
+function gradeOf(p){
+  if(p>=95) return{lbl:'A+', cls:'b-su'};
+  if(p>=90) return{lbl:'A',  cls:'b-su'};
+  if(p>=85) return{lbl:'B+', cls:'b-u'};
+  if(p>=80) return{lbl:'B',  cls:'b-u'};
+  if(p>=75) return{lbl:'C+', cls:'b-mi'};
+  if(p>=70) return{lbl:'C',  cls:'b-mi'};
+  // 환산점수 70점 미만 → 미성취(환류)
+  return {lbl:'미성취(환류)', cls:'b-hw'};
+}
+function discEval(d){
+  if(d>=.4) return{lbl:'우수',  col:'#22c55e'};
+  if(d>=.3) return{lbl:'양호',  col:'#84cc16'};
+  if(d>=.2) return{lbl:'보통',  col:'#eab308'};
+  return         {lbl:'개선필요',col:'#ef4444'};
+}
+function killChart(id){if(S.charts[id]){try{S.charts[id].destroy()}catch(e){}delete S.charts[id];}}
+
+// ═══════════════════════════
+// RUN ANALYSIS
+// ═══════════════════════════
+function runAnalysis(){
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('dash').classList.remove('show');
+  setTimeout(()=>{
+    try{
+      S.f1 = S.raw[0] ? parseFile1(S.raw[0].rows) : null;
+      S.f2 = S.raw[1] ? parseFile2(S.raw[1].rows) : null;
+      S.f3 = null; S.f3Total = null;
+
+      if(S.raw[2]) {
+        const allParsed = S.raw[2].sheets
+          .map(s=>parseClassSheet(s.rows, s.name)).filter(Boolean);
+        // "Sheet1" 또는 "전체/종합" 시트명 → 전체 데이터로 분리
+        const TOTAL_PAT = /^sheet\d+$|^전체$|^종합$|^all$|^total$/i;
+        const totalIdx = allParsed.findIndex(c=>TOTAL_PAT.test(c.label.trim()));
+        if(totalIdx >= 0) {
+          S.f3Total = allParsed[totalIdx];             // 전체 시트
+          S.f3 = allParsed.filter((_,i)=>i!==totalIdx); // 반별 시트
+        } else {
+          S.f3 = allParsed;
+        }
+      }
+
+      if(!S.f1&&!S.f2&&!S.f3&&!S.f3Total) throw new Error('분석할 데이터가 없습니다.');
+
+      // 전체 학생 목록: S.f3Total 우선, 없으면 반별 합산
+      const allStudents = S.f3Total
+        ? S.f3Total.students.map(s=>({...s,cls:'전체'}))
+        : (S.f3 ? S.f3.flatMap(c=>c.students) : []);
+
+      if(allStudents.length){
+        // File 3 데이터: 원점수(40점) 기준 → isConvScale=false
+        renderSummary(calcStats(allStudents.map(s=>s.total)), S.f3?.length||0, false);
+      } else if(S.f2) {
+        // File 3 없을 때 File 2 통계로 요약 카드 채우기
+        let f2st={};
+        if(S.f2.type==='freq') f2st=statsFromFreq(S.f2.dist.filter(d=>d.count>0));
+        else if(S.f2.type==='individual') f2st=calcStats(S.f2.scores);
+        if(f2st.n) {
+          // 스케일 감지 후 원점수(40점) 기준으로 정규화 → File 3과 동일한 포맷
+          const maxS2 = S.f2.type==='freq'
+            ? Math.max(...S.f2.dist.map(d=>d.score))
+            : Math.max(...S.f2.scores);
+          const ic = maxS2 > MAX_SCORE;  // true: 0~100 환산 스케일
+          const toR = v => ic ? Math.round(v*MAX_SCORE/100*10)/10 : Math.round(v*10)/10;
+          // 원점수 기준 st 생성
+          const rawSt = {
+            n:        f2st.n,
+            mean:     toR(f2st.mean),
+            max:      toR(f2st.max),
+            min:      toR(f2st.min),
+            sd:       toR(f2st.sd),
+            passRate: f2st.passRate
+          };
+          renderSummary(rawSt, 0, false);  // File 3과 동일: isConvScale=false
+          document.getElementById('c-cls').textContent = '성적분포도';
+        }
+      }
+
+      // 반 선택기: 반별 시트만 표시 (Sheet1 제외)
+      const classesForSelector = S.f3||[];
+      if(classesForSelector.length) buildClassSelectors(classesForSelector);
+
+      renderItems(S.f1);
+      renderScores(S.f2);
+      renderTop10(S.f1);
+      renderDisc(S.f1);
+      renderCompare(classesForSelector);
+      renderRank(allStudents, 'all');
+
+      // dim tabs with no data
+      ['items','top10','disc'].forEach(t=>
+        document.getElementById(`tbtn-${t}`).classList.toggle('dim',!S.f1));
+      document.getElementById('tbtn-scores').classList.toggle('dim',!S.f2);
+      const hasF3 = !!(S.f3Total||classesForSelector.length);
+      ['compare','rank'].forEach(t=>
+        document.getElementById(`tbtn-${t}`).classList.toggle('dim',!hasF3));
+
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('dash').classList.add('show');
+      toast('✅ 분석 완료!');
+    }catch(ex){
+      document.getElementById('loading').classList.remove('show');
+      toast('❌ '+ex.message); console.error(ex);
+    }
+  },80);
+}
+
+// ═══════════════════════════
+// SUMMARY CARDS
+// ═══════════════════════════
+// isConvScale: true → st 값이 0~100 환산점수 기준 / false → 0~40 원점수 기준
+function renderSummary(st, numClasses, isConvScale=false){
+  const toRaw  = v => isConvScale ? Math.round(v*MAX_SCORE/100*10)/10 : Math.round(v*10)/10;
+  const toConv = v => isConvScale ? Math.round(v*10)/10 : Math.round(v*100/MAX_SCORE*10)/10;
+  const fmt    = v => v!=null && !isNaN(v) ? v.toFixed(1) : '-';
+
+  document.getElementById('c-n').textContent    = st.n ?? '-';
+  document.getElementById('c-cls').textContent  = numClasses ? `${numClasses}개 반`
+                                                 : (isConvScale?'파일2(성적분포도)':'-');
+
+  // 원점수(환산점수) 형식으로 표시
+  const setCard = (valId, subId, raw, conv) => {
+    document.getElementById(valId).textContent = `${fmt(raw)}점`;
+    const sub = document.getElementById(subId);
+    if(sub) sub.textContent = `(환산 ${fmt(conv)}점)`;
+  };
+
+  setCard('c-avg','c-avg-sub', toRaw(st.mean),  toConv(st.mean));
+  setCard('c-max','c-max-sub', toRaw(st.max),   toConv(st.max));
+  setCard('c-min','c-min-sub', toRaw(st.min),   toConv(st.min));
+
+  // 표준편차: 원점수 기준으로 표시
+  document.getElementById('c-sd').textContent  = `${fmt(toRaw(st.sd))}점`;
+  document.getElementById('c-pass').textContent = st.passRate!=null ? st.passRate.toFixed(1) : '-';
+}
+
+// ═══════════════════════════
+// CLASS SELECTOR
+// ═══════════════════════════
+function buildClassSelectors(classes){
+  ['clsBar1','clsBar2'].forEach(id=>{
+    const bar=document.getElementById(id);
+    bar.innerHTML='<label>반 선택:</label>';
+    const all=document.createElement('button');
+    all.className='cls-btn on'; all.textContent='전체'; all.dataset.cls='all';
+    all.onclick=()=>selectClass('all');
+    bar.appendChild(all);
+    classes.forEach(c=>{
+      const btn=document.createElement('button');
+      btn.className='cls-btn'; btn.textContent=c.label; btn.dataset.cls=c.label;
+      btn.onclick=()=>selectClass(c.label);
+      bar.appendChild(btn);
+    });
+  });
+}
+
+function selectClass(cls){
+  S.activeClass=cls;
+  document.querySelectorAll('.cls-btn').forEach(b=>
+    b.classList.toggle('on', b.dataset.cls===cls));
+
+  // 전체: S.f3Total(Sheet1) 우선, 없으면 반별 합산
+  const students = cls==='all'
+    ? (S.f3Total ? S.f3Total.students.map(s=>({...s,cls:'전체'}))
+                 : (S.f3||[]).flatMap(c=>c.students))
+    : ((S.f3||[]).find(c=>c.label===cls)?.students||[]);
+
+  // 요약 카드 업데이트 (File 3 = 원점수 기준, isConvScale=false)
+  if(cls!=='all' && students.length){
+    renderSummary(calcStats(students.map(s=>s.total)), 1, false);
+    document.getElementById('c-cls').textContent=cls;
+  } else if(cls==='all'){
+    const src=S.f3Total ? S.f3Total.students : (S.f3||[]).flatMap(c=>c.students);
+    renderSummary(calcStats(src.map(s=>s.total)), S.f3?.length||0, false);
+  }
+
+  // Render compare and rank
+  const classesToShow = cls==='all' ? S.f3 : S.f3.filter(c=>c.label===cls);
+  renderCompare(classesToShow);
+  renderRank(students, cls);
+  document.getElementById('rankTitle').textContent = cls==='all'?'전체':cls;
+}
+
+// ═══════════════════════════
+// RENDER: FILE 1 — 문항분석
+// ═══════════════════════════
+function renderItems(f1){
+  if(!f1){
+    ['tp-items'].forEach(id=>setNoData(id,'📋','파일1 (문항분석표)를 업로드하면 분석이 표시됩니다.'));
+    return;
+  }
+  const items=f1.items;
+
+  // ── 감지된 열 정보 패널 ──
+  const det=f1.detected||{};
+  const fields=[
+    {k:'crCol', lbl:'정답률'}, {k:'discCol',lbl:'변별도'}, {k:'diffCol',lbl:'난이도'},
+    {k:'avgCol',lbl:'평균'},   {k:'sdCol',  lbl:'표준편차'},{k:'qCol',  lbl:'문항번호'},
+  ];
+  const badges=fields.map(({k,lbl})=>
+    det[k]?`<span style="display:inline-flex;align-items:center;gap:4px;background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600">${lbl}<span style="opacity:.6">→ ${det[k]}</span></span>`
+           :`<span style="display:inline-flex;align-items:center;gap:4px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:2px 8px;border-radius:100px;font-size:10px">${lbl}<span style="opacity:.7">미감지</span></span>`
+  ).join('');
+  document.getElementById('tp-items').querySelector('.det-panel')?.remove();
+  const detEl=document.createElement('div');
+  detEl.className='det-panel';
+  detEl.style.cssText='display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;align-items:center';
+  detEl.innerHTML=`<span style="font-size:10px;color:var(--muted);font-weight:600;margin-right:2px">📌 감지된 열:</span>${badges}`;
+  document.getElementById('tp-items').querySelector('.src-bdg')?.insertAdjacentElement('afterend',detEl);
+  const DLBLS=['매우 쉬움','쉬움','보통','어려움','매우 어려움'];
+  const DCOLS=['#16a34a','#22c55e','#f59e0b','#f97316','#dc2626'];
+
+  // diffLbl이 표준 5단계와 일치하지 않으면 cr 기반으로 재분류
+  function stdDiff(it){
+    if(it.diffLbl&&DLBLS.includes(it.diffLbl)) return it.diffLbl;
+    if(it.cr!=null) return diffLevel(1-it.cr).lbl;
+    return null;
+  }
+
+  const dcnt={}; DLBLS.forEach(l=>dcnt[l]=0);
+  items.forEach(i=>{ const k=stdDiff(i); if(k) dcnt[k]=(dcnt[k]||0)+1; });
+
+  document.getElementById('diffRow').innerHTML=DLBLS.map((l,i)=>`
+    <div class="diff-mini">
+      <div class="diff-num" style="color:${DCOLS[i]}">${dcnt[l]||0}</div>
+      <div class="diff-lbl">${l}</div>
+      <div class="diff-pct" style="color:${DCOLS[i]}">${(((dcnt[l]||0)/items.length)*100).toFixed(0)}%</div>
+    </div>`).join('');
+
+  // 정답률 bar
+  killChart('chItem');
+  S.charts.chItem=new Chart(document.getElementById('chItem'),{
+    type:'bar',
+    data:{labels:items.map(i=>i.qName),datasets:[{
+      label:'정답률(%)',
+      data:items.map(i=>i.cr!=null?Math.round(i.cr*1000)/10:null),
+      backgroundColor:items.map(i=>(i.diffColor||'#94a3b8')+'bb'),
+      borderColor:items.map(i=>i.diffColor||'#94a3b8'),borderWidth:1,borderRadius:3
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        afterLabel:c=>{const it=items[c.dataIndex];return`오답률: ${it.wr!=null?(it.wr*100).toFixed(1)+'%':'-'}\n변별도: ${it.disc!=null?it.disc.toFixed(3):'-'}\n난이도: ${it.diffLbl||'-'}`;}
+      }}},
+      scales:{y:{min:0,max:100,title:{display:true,text:'정답률(%)'},grid:{color:'#f1f5f9'}},
+        x:{ticks:{maxRotation:70,font:{size:9}}}}
+    }
+  });
+
+  // 난이도 pie
+  killChart('chDiffPie');
+  const pL=DLBLS.filter(l=>(dcnt[l]||0)>0);
+  S.charts.chDiffPie=new Chart(document.getElementById('chDiffPie'),{
+    type:'doughnut',
+    data:{labels:pL,datasets:[{
+      data:pL.map(l=>dcnt[l]||0),
+      backgroundColor:DLBLS.map((l,i)=>(dcnt[l]||0)>0?DCOLS[i]:null).filter(Boolean),
+      borderWidth:2,borderColor:'#fff'
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10}}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed}문항`}}
+      }
+    }
+  });
+
+  // 정답률 분포 (10% bins)
+  const crBins=Array(10).fill(0);
+  items.filter(i=>i.cr!=null).forEach(i=>crBins[Math.min(9,Math.floor(i.cr*10))]++);
+  killChart('chCrDist');
+  S.charts.chCrDist=new Chart(document.getElementById('chCrDist'),{
+    type:'bar',
+    data:{labels:['0–10%','10–20%','20–30%','30–40%','40–50%','50–60%','60–70%','70–80%','80–90%','90–100%'],
+      datasets:[{label:'문항 수',data:crBins,
+        backgroundColor:Array(10).fill(0).map((_,i)=>{
+          const m=(i+.5)*10;
+          return m<40?'rgba(239,68,68,.7)':m<70?'rgba(245,158,11,.7)':'rgba(34,197,94,.7)';
+        }),borderWidth:0,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'문항 수'}},x:{ticks:{font:{size:8},maxRotation:45}}}
+    }
+  });
+
+  // ── 난이도 분류 카드 ──────────────────────────
+  const DIFF_META = [
+    { lbl:'매우 쉬움', bg:'#f0fdf4', col:'#15803d', border:'#bbf7d0' },
+    { lbl:'쉬움',      bg:'#f0fdf4', col:'#059669', border:'#a7f3d0' },
+    { lbl:'보통',      bg:'#fefce8', col:'#92400e', border:'#fde68a' },
+    { lbl:'어려움',    bg:'#fff7ed', col:'#c2410c', border:'#fed7aa' },
+    { lbl:'매우 어려움',bg:'#fef2f2', col:'#dc2626', border:'#fecaca' },
+  ];
+  const grouped = {};
+  DIFF_META.forEach(m => grouped[m.lbl] = []);
+  items.forEach(it => {
+    const key = stdDiff(it);
+    if(key && grouped[key] !== undefined) grouped[key].push(it);
+  });
+
+  document.getElementById('diffClassify').innerHTML = DIFF_META.map(m => {
+    const grp = grouped[m.lbl] || [];
+    const avgCr = grp.length ? grp.reduce((s,i) => s + (i.cr||0), 0) / grp.length : null;
+    const avgDisc = grp.filter(i=>i.disc!=null).length
+      ? grp.filter(i=>i.disc!=null).reduce((s,i)=>s+i.disc,0) / grp.filter(i=>i.disc!=null).length : null;
+    return `
+      <div class="diff-group" style="background:${m.bg};border:1px solid ${m.border}">
+        <div class="diff-g-ttl" style="color:${m.col}">${m.lbl}</div>
+        <div class="diff-g-count" style="color:${m.col}">${grp.length}</div>
+        <div class="diff-g-avgcr" style="color:${m.col}">
+          정답률 평균 ${avgCr!=null?(avgCr*100).toFixed(1)+'%':'—'}
+          ${avgDisc!=null?` · 변별도 ${avgDisc.toFixed(2)}`:''}
+        </div>
+        <div class="diff-g-sep"></div>
+        <div class="diff-q-list">
+          ${grp.length ? grp.map(i=>`<span class="diff-q-chip" style="color:${m.col}" title="${i.qName} · 정답률 ${i.cr!=null?(i.cr*100).toFixed(1)+'%':'?'}">${i.qName}</span>`).join('') : '<span style="font-size:10px;opacity:.5">—</span>'}
+        </div>
+      </div>`;
+  }).join('');
+
+  // ── 난이도 순 정렬 차트 (정답률 오름차순) ────────
+  const sortedItems = items.filter(i=>i.cr!=null).sort((a,b)=>a.cr-b.cr);
+  killChart('chDiffSorted');
+  S.charts.chDiffSorted = new Chart(document.getElementById('chDiffSorted'), {
+    type: 'bar',
+    data: {
+      labels: sortedItems.map(i => i.qName),
+      datasets: [{
+        label: '정답률(%)',
+        data:  sortedItems.map(i => Math.round(i.cr*1000)/10),
+        backgroundColor: sortedItems.map(i => (i.diffColor||'#94a3b8')+'cc'),
+        borderColor:     sortedItems.map(i => i.diffColor||'#94a3b8'),
+        borderWidth: 1, borderRadius: 3
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{callbacks:{
+        afterLabel: c => {
+          const it = sortedItems[c.dataIndex];
+          return `오답률: ${(it.wr*100).toFixed(1)}%\n난이도: ${it.diffLbl||'-'}\n변별도: ${it.disc!=null?it.disc.toFixed(3):'-'}`;
+        }
+      }}},
+      scales: {
+        x: { min:0, max:100, title:{display:true,text:'정답률(%)'} },
+        y: { ticks:{font:{size:9}} }
+      }
+    }
+  });
+
+  // ── 난이도별 통계 요약 ──────────────────────────
+  document.getElementById('diffStatSummary').innerHTML = DIFF_META.map(m => {
+    const grp = grouped[m.lbl] || [];
+    if(!grp.length) return `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:5px;border-radius:8px;background:${m.bg};border:1px solid ${m.border}">
+        <span style="font-size:11px;font-weight:700;color:${m.col};flex:1">${m.lbl}</span>
+        <span style="font-size:11px;color:${m.col};opacity:.6">0문항</span>
+      </div>`;
+    const crVals  = grp.filter(i=>i.cr!=null).map(i=>i.cr);
+    const discVals= grp.filter(i=>i.disc!=null).map(i=>i.disc);
+    const avgCr   = crVals.length  ? crVals.reduce((a,b)=>a+b,0)/crVals.length   : null;
+    const maxCr   = crVals.length  ? Math.max(...crVals)  : null;
+    const minCr   = crVals.length  ? Math.min(...crVals)  : null;
+    const avgDisc = discVals.length ? discVals.reduce((a,b)=>a+b,0)/discVals.length : null;
+    return `
+      <div style="margin-bottom:8px;border-radius:9px;overflow:hidden;border:1px solid ${m.border}">
+        <div style="background:${m.col};color:#fff;padding:6px 10px;font-size:11px;font-weight:700;display:flex;justify-content:space-between">
+          <span>${m.lbl}</span><span>${grp.length}문항</span>
+        </div>
+        <div class="diff-stat-row" style="padding:7px;background:${m.bg};gap:5px">
+          <div class="diff-stat-cell">
+            <div class="dsc-lbl">정답률 평균</div>
+            <div class="dsc-val" style="color:${m.col}">${avgCr!=null?(avgCr*100).toFixed(1)+'%':'—'}</div>
+          </div>
+          <div class="diff-stat-cell">
+            <div class="dsc-lbl">최고 / 최저</div>
+            <div class="dsc-val" style="color:${m.col};font-size:11px">
+              ${maxCr!=null?(maxCr*100).toFixed(0)+'%':'—'} / ${minCr!=null?(minCr*100).toFixed(0)+'%':'—'}
+            </div>
+          </div>
+          <div class="diff-stat-cell">
+            <div class="dsc-lbl">평균 변별도</div>
+            <div class="dsc-val" style="color:${m.col}">${avgDisc!=null?avgDisc.toFixed(3):'—'}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // ── 상세표 ────────────────────────────────────
+  document.getElementById('tbItem').innerHTML=items.map(it=>`
+    <tr>
+      <td><strong>${it.qName}</strong></td>
+      <td>${it.cr!=null?(it.cr*100).toFixed(1)+'%':'-'}
+        <div class="pb"><div class="pf" style="width:${it.cr!=null?it.cr*100:0}%;background:#22c55e"></div></div></td>
+      <td>${it.wr!=null?(it.wr*100).toFixed(1)+'%':'-'}
+        <div class="pb"><div class="pf" style="width:${it.wr!=null?it.wr*100:0}%;background:#ef4444"></div></div></td>
+      <td>${it.disc!=null?it.disc.toFixed(3):'-'}</td>
+      <td>${it.avg!=null?(it.avg*100).toFixed(1)+'%':'-'}</td>
+      <td>${it.sd!=null?it.sd.toFixed(3):'-'}</td>
+      <td><span class="bdg ${it.diffCls||''}" style="${!it.diffCls&&it.diffColor?`background:${it.diffColor}22;color:${it.diffColor}`:''}">${it.diffLbl||'-'}</span></td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════
+// RENDER: FILE 2 — 성적분포 (0~100)
+// ═══════════════════════════
+function renderScores(f2){
+  if(!f2){setNoData('tp-scores','📊','파일2 (성적분포도)를 업로드하면 분포가 표시됩니다.');return;}
+
+  let dist=[], st={};
+  if(f2.type==='freq'){
+    dist = f2.dist;
+    st   = statsFromFreq(dist.filter(d=>d.count>0));
+  } else {
+    const scores = f2.scores;
+    st = calcStats(scores);
+    const tmp={};
+    scores.forEach(s=>{const k=Math.round(s);tmp[k]=(tmp[k]||0)+1;});
+    dist = Array.from({length:101},(_,i)=>({score:i,count:tmp[i]||0}));
+  }
+
+  // ── 스케일 감지: dist 전체에서 최대 점수로 판별 ──
+  const maxInDist = dist.length ? Math.max(...dist.map(d=>d.score)) : 0;
+  const isConv    = maxInDist > MAX_SCORE;  // true → 0~100(환산) / false → 0~40(원점수)
+
+  // ── 환산점수 기준으로 dist 점수 정규화 ──
+  const toConvScore = s => isConv ? s : Math.round(s*100/MAX_SCORE*10)/10;
+
+  // ── 성취수준 등급 구간 (A+~F) ──
+  const GRADE_BANDS = [
+    {lbl:'A+', min:95, col:'#1d4ed8'},
+    {lbl:'A',  min:90, col:'#3b82f6'},
+    {lbl:'B+', min:85, col:'#7c3aed'},
+    {lbl:'B',  min:80, col:'#8b5cf6'},
+    {lbl:'C+', min:75, col:'#059669'},
+    {lbl:'C',  min:70, col:'#34d399'},
+    {lbl:'D+', min:65, col:'#d97706'},
+    {lbl:'D',  min:60, col:'#f59e0b'},
+    {lbl:'F',  min:0,  col:'#dc2626'},
+  ];
+  // 각 구간 레이블: 등급(원점수/환산점수)
+  const gradeBandLabels = GRADE_BANDS.map((b,i)=>{
+    const raw  = Math.round(b.min * MAX_SCORE/100);
+    if(b.lbl==='F') return `F(<${Math.round(60*MAX_SCORE/100)}점/<60점)`;
+    return `${b.lbl}(${raw}점/${b.min}점)`;
+  });
+
+  // 각 구간별 학생 수 계산
+  const gradeCounts = GRADE_BANDS.map((b,i)=>{
+    const upperMin = i===0 ? 101 : GRADE_BANDS[i-1].min;
+    return dist.filter(d=>{
+      const s=toConvScore(d.score);
+      return s>=b.min && s<upperMin;
+    }).reduce((sum,d)=>sum+d.count,0);
+  });
+
+  // ── 히스토그램: 성취수준 등급 구간 (A+→F) ──
+  killChart('chHist');
+  S.charts.chHist=new Chart(document.getElementById('chHist'),{
+    type:'bar',
+    data:{labels:gradeBandLabels,datasets:[{
+      label:'학생 수',data:gradeCounts,
+      backgroundColor:GRADE_BANDS.map(b=>b.col+'cc'),
+      borderColor:GRADE_BANDS.map(b=>b.col),
+      borderWidth:1,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        label:c=>`${c.label}: ${c.parsed.y}명`,
+        afterLabel:c=>st.n?`비율: ${((c.parsed.y/st.n)*100).toFixed(1)}%`:''
+      }}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'학생 수(명)'}},
+        x:{ticks:{font:{size:9},maxRotation:30}}}
+    }
+  });
+
+  // ── 성취수준 파이 (7구간: A+,A,B+,B,C+,C,미성취) ──
+  const pieThresh=[95,90,85,80,75,70,0];
+  const pieGrades=['A+','A','B+','B','C+','C'];
+  const pieKeys = pieGrades.map((g,i)=>{
+    const raw=Math.round(pieThresh[i]*MAX_SCORE/100);
+    return `${g}(${raw}점/${pieThresh[i]}점)`;
+  }).concat([`미성취(환류)(<${Math.round(pieThresh[5]*MAX_SCORE/100)}점/<${pieThresh[5]}점)`]);
+
+  const pCnt={}; pieKeys.forEach(k=>pCnt[k]=0);
+  dist.forEach(d=>{
+    if(!d.count) return;
+    const s=toConvScore(d.score);
+    const idx=pieThresh.findIndex(t=>s>=t);
+    if(idx>=0) pCnt[pieKeys[idx]]+=d.count;
+  });
+  const pColors=['#1d4ed8','#3b82f6','#7c3aed','#8b5cf6','#059669','#34d399','#dc2626'];
+  killChart('chGrade');
+  S.charts.chGrade=new Chart(document.getElementById('chGrade'),{
+    type:'doughnut',
+    data:{labels:Object.keys(pCnt).filter(k=>pCnt[k]>0),datasets:[{
+      data:Object.keys(pCnt).filter(k=>pCnt[k]>0).map(k=>pCnt[k]),
+      backgroundColor:pieKeys.map((k,i)=>pCnt[k]>0?pColors[i]:null).filter(Boolean),
+      borderWidth:2,borderColor:'#fff'
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:12}},
+        tooltip:{callbacks:{label:c=>st.n?`${c.label}: ${c.parsed}명 (${((c.parsed/st.n)*100).toFixed(1)}%)`:''}}
+      }
+    }
+  });
+
+  // ── 누적 분포 곡선 ──
+  const cdfPts=[];let cum=0;
+  dist.filter(d=>d.score>=0&&d.score<=100).sort((a,b)=>a.score-b.score).forEach(d=>{
+    cum+=d.count;
+    if(d.count>0||cdfPts.length===0) cdfPts.push({x:d.score,y:st.n?cum/st.n*100:0});
+  });
+  killChart('chCdf');
+  S.charts.chCdf=new Chart(document.getElementById('chCdf'),{
+    type:'line',
+    data:{labels:cdfPts.map(p=>p.x),datasets:[{
+      label:'누적 비율(%)',
+      data:cdfPts.map(p=>Math.round(p.y*10)/10),
+      borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.1)',fill:true,tension:.35,pointRadius:0
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:100,title:{display:true,text:'누적 비율(%)'}},
+        x:{title:{display:true,text:'점수 (0~100)'},ticks:{maxTicksLimit:11}}}
+    }
+  });
+
+  // ── 통계 요약: 환산점수(원점수) 형식 ──
+  // 환산점수를 앞에, 원점수를 괄호 안에 표시
+  function fmtDual(val){
+    if(val==null||isNaN(val)) return '-';
+    const conv = isConv ? Math.round(val*10)/10 : Math.round(val*100/MAX_SCORE*10)/10;
+    const raw  = isConv ? Math.round(val*MAX_SCORE/100*10)/10 : Math.round(val*10)/10;
+    return `<span style="font-weight:700">${raw.toFixed(1)}점</span>`
+         + `<span style="color:var(--p1);font-size:10px;margin-left:3px">(환산 ${conv.toFixed(1)}점)</span>`;
+  }
+
+  document.getElementById('statGrid').innerHTML=[
+    ['평균',            fmtDual(st.mean)],
+    ['중앙값',          fmtDual(st.med)],
+    ['표준편차',        st.sd!=null?`${st.sd.toFixed(2)}`:'-'],
+    ['최고점',          fmtDual(st.max)],
+    ['최저점',          fmtDual(st.min)],
+    ['범위',            (st.max!=null&&st.min!=null)?fmtDual(st.max-st.min):'-'],
+    ['Q1 (하위25%)',    fmtDual(st.q1)],
+    ['Q3 (상위75%)',    fmtDual(st.q3)],
+    ['통과율(환산≥70점)',st.passRate!=null?st.passRate.toFixed(1)+'%':'-'],
+    ['총 학생',         st.n!=null?st.n+'명':'-']
+  ].map(([l,v])=>`<div class="stat-item"><span class="stat-lbl">${l}</span><span class="stat-val" style="text-align:right">${v}</span></div>`).join('');
+}
+
+// ═══════════════════════════
+// RENDER: TOP 10 (파일1)
+// ═══════════════════════════
+function renderTop10(f1){
+  if(!f1){setNoData('tp-top10','📋','파일1 (문항분석표)를 업로드하면 오답 분석이 표시됩니다.');return;}
+  const items=f1.items.filter(i=>i.cr!=null);
+  const top=[...items].sort((a,b)=>a.cr-b.cr).slice(0,10);
+
+  killChart('chTop10');
+  S.charts.chTop10=new Chart(document.getElementById('chTop10'),{
+    type:'bar',
+    data:{labels:top.map(i=>i.qName),datasets:[{
+      label:'정답률(%)',data:top.map(i=>Math.round(i.cr*1000)/10),
+      backgroundColor:top.map(i=>(i.diffColor||'#94a3b8')+'bb'),
+      borderColor:top.map(i=>i.diffColor||'#94a3b8'),
+      borderWidth:1,borderRadius:3
+    }]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        afterLabel:c=>`오답률: ${(top[c.dataIndex].wr*100).toFixed(1)}% | 변별도: ${top[c.dataIndex].disc!=null?top[c.dataIndex].disc.toFixed(3):'-'}`
+      }}},
+      scales:{x:{min:0,max:100,title:{display:true,text:'정답률(%)'}}}
+    }
+  });
+
+  const wBins=Array(10).fill(0);
+  items.forEach(i=>wBins[Math.min(9,Math.floor(i.wr*10))]++);
+  killChart('chWrDist');
+  S.charts.chWrDist=new Chart(document.getElementById('chWrDist'),{
+    type:'bar',
+    data:{labels:['0–10','10–20','20–30','30–40','40–50','50–60','60–70','70–80','80–90','90–100%'],
+      datasets:[{label:'문항 수',data:wBins,
+        backgroundColor:Array(10).fill(0).map((_,i)=>{const r=(i+.5)*10;return r<30?'rgba(34,197,94,.7)':r<60?'rgba(245,158,11,.7)':'rgba(239,68,68,.7)';}),
+        borderWidth:0,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'문항 수'}},x:{ticks:{font:{size:8}}}}
+    }
+  });
+
+  document.getElementById('tbTop10').innerHTML=top.map((it,i)=>`
+    <tr>
+      <td><strong>${i+1}위</strong></td>
+      <td><strong>${it.qName}</strong></td>
+      <td style="color:#16a34a;font-weight:700">${(it.cr*100).toFixed(1)}%</td>
+      <td style="color:#dc2626;font-weight:700">${(it.wr*100).toFixed(1)}%</td>
+      <td>${it.disc!=null?it.disc.toFixed(3):'-'}</td>
+      <td><span class="bdg ${it.diffCls||''}">${it.diffLbl||'-'}</span></td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════
+// RENDER: DISCRIMINATION (파일1)
+// ═══════════════════════════
+function renderDisc(f1){
+  if(!f1){setNoData('tp-disc','🎯','파일1 (문항분석표)를 업로드하면 변별도 분석이 표시됩니다.');return;}
+
+  let items=f1.items.filter(i=>i.disc!=null);
+  let computed=false;
+
+  // 변별도 열이 없으면 정답률·표준편차로 근사 계산
+  // 근사 공식: D ≈ 2 × p × (1-p) / σ_max  (단순 추정)
+  // 더 실용적: 문항표준편차 기반 추정 D ≈ sd / 0.5
+  if(!items.length && f1.items.some(i=>i.cr!=null)){
+    f1.items.forEach(it=>{
+      if(it.disc==null&&it.cr!=null){
+        // sd가 있으면 사용, 없으면 p×(1-p) 기반 추정
+        const p=it.cr;
+        const sdVal=it.sd!=null?it.sd:Math.sqrt(p*(1-p));
+        // 점이분 추정: D_approx = sdVal / max_possible_sd
+        // max_possible_sd at p=0.5 → 0.5, 따라서 D_approx = sdVal/0.5 × (1-|2p-1|) 보정
+        it.disc=parseFloat(Math.min(1,Math.max(0, sdVal*2*(1-Math.abs(2*p-1)))).toFixed(3));
+      }
+    });
+    items=f1.items.filter(i=>i.disc!=null);
+    computed=true;
+  }
+
+  if(!items.length){setNoData('tp-disc','🎯','변별도 데이터가 없습니다. (파일1에 변별도 열 또는 정답률 열이 필요합니다)');return;}
+
+  // 감지된 열 정보 및 계산 방법 표시
+  const detInfo = f1.detected||{};
+  const infoHtml = `
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#0369a1;line-height:1.7">
+      <strong>📌 감지된 열:</strong>
+      정답률=${detInfo.crCol||'없음'} · 변별도=${detInfo.discCol||'없음'} · 난이도=${detInfo.diffCol||'없음'} · 평균=${detInfo.avgCol||'없음'} · 표준편차=${detInfo.sdCol||'없음'}
+      ${computed?'&nbsp;|&nbsp;<span style="color:#d97706">⚠️ 변별도 열 없음 → 정답률·표준편차 기반 근사 계산</span>':'&nbsp;|&nbsp;<span style="color:#059669">✅ 파일의 변별도 값 사용</span>'}
+    </div>`;
+
+  // 기존 info 제거 후 삽입 (.src-bdg 바로 다음에)
+  document.getElementById('tp-disc').querySelector('.disc-info')?.remove();
+  const infoEl=document.createElement('div');
+  infoEl.className='disc-info'; infoEl.innerHTML=infoHtml;
+  const srcBdg=document.getElementById('tp-disc').querySelector('.src-bdg');
+  srcBdg ? srcBdg.insertAdjacentElement('afterend', infoEl)
+         : document.getElementById('tp-disc').prepend(infoEl);
+
+  const discColor=d=>{
+    if(d>=.4) return'rgba(34,197,94,.8)';
+    if(d>=.3) return'rgba(132,204,22,.8)';
+    if(d>=.2) return'rgba(234,179,8,.8)';
+    return'rgba(239,68,68,.8)';
+  };
+
+  killChart('chDisc');
+  S.charts.chDisc=new Chart(document.getElementById('chDisc'),{
+    type:'bar',
+    data:{labels:items.map(i=>i.qName),datasets:[{
+      label:'변별도',data:items.map(i=>Math.round(i.disc*1000)/1000),
+      backgroundColor:items.map(i=>discColor(i.disc)),
+      borderWidth:0,borderRadius:3
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        label:c=>`${items[c.dataIndex].qName} — 변별도: ${Number(items[c.dataIndex].disc).toFixed(3)}`,
+        afterLabel:c=>`정답률: ${items[c.dataIndex].cr!=null?(items[c.dataIndex].cr*100).toFixed(1)+'%':'-'}\n평가: ${discEval(items[c.dataIndex].disc).lbl}`
+      }}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'변별도 지수'},
+        ticks:{callback:v=>Number(v).toFixed(1)}},
+        x:{ticks:{maxRotation:70,font:{size:9}}}}
+    }
+  });
+
+  // Scatter: 정답률(x) vs 변별도(y)
+  const crDiscItems=items.filter(i=>i.cr!=null);
+  killChart('chScatter');
+  S.charts.chScatter=new Chart(document.getElementById('chScatter'),{
+    type:'scatter',
+    data:{datasets:[{
+      label:'문항',
+      data:crDiscItems.map(i=>({x:Math.round(i.cr*1000)/10, y:Math.round(i.disc*1000)/1000, label:i.qName})),
+      backgroundColor:crDiscItems.map(i=>discColor(i.disc)),
+      pointRadius:6,pointHoverRadius:8
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        label:c=>`${c.raw.label} — 정답률: ${c.raw.x}%, 변별도: ${c.raw.y}`
+      }}},
+      scales:{
+        x:{min:0,max:100,title:{display:true,text:'정답률(%)'},grid:{color:'#f1f5f9'}},
+        y:{title:{display:true,text:'변별도'},grid:{color:'#f1f5f9'}}
+      }
+    }
+  });
+
+  document.getElementById('tbDisc').innerHTML=items.map(it=>{
+    const ev=discEval(it.disc);
+    return`<tr>
+      <td><strong>${it.qName}</strong></td>
+      <td>${it.cr!=null?(it.cr*100).toFixed(1)+'%':'-'}</td>
+      <td style="color:${ev.col};font-weight:700">${it.disc.toFixed(3)}</td>
+      <td><span class="bdg" style="background:${ev.col}22;color:${ev.col}">${ev.lbl}</span></td>
+      <td>${it.avg!=null?(it.avg*100).toFixed(1)+'%':'-'}</td>
+      <td>${it.sd!=null?it.sd.toFixed(3):'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════
+// RENDER: 반별 분석 (파일3)
+// ═══════════════════════════
+function renderCompare(classes){
+  if(!classes||!classes.length){setNoData('tp-compare','🗂️','파일3 (종합성적현황)을 업로드하면 반별 분석이 표시됩니다.');return;}
+  const PAL=['rgba(59,130,246,.85)','rgba(139,92,246,.85)','rgba(16,185,129,.85)',
+             'rgba(245,158,11,.85)','rgba(239,68,68,.85)','rgba(8,145,178,.85)'];
+  const stList=classes.map(c=>({lbl:c.label,...calcStats(c.students.map(s=>s.total))}));
+
+  // Avg/median/SD comparison
+  killChart('chCmpAvg');
+  S.charts.chCmpAvg=new Chart(document.getElementById('chCmpAvg'),{
+    type:'bar',
+    data:{labels:stList.map(s=>s.lbl),
+      datasets:[
+        {label:'평균',  data:stList.map(s=>Math.round(s.mean*100)/100), backgroundColor:PAL.slice(0,stList.length),borderWidth:0,borderRadius:5},
+        {label:'중앙값',data:stList.map(s=>Math.round(s.med*10)/10),  backgroundColor:PAL.slice(0,stList.length).map(c=>c.replace('.85','.4')),
+          borderColor:PAL.slice(0,stList.length),borderWidth:2,borderRadius:5},
+        {label:'표준편차',data:stList.map(s=>Math.round(s.sd*100)/100),
+          type:'line',borderColor:'#1d4ed8',backgroundColor:'transparent',borderWidth:2,pointRadius:4,yAxisID:'y'}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:10}}}},
+      scales:{y:{min:0,max:MAX_SCORE,title:{display:true,text:`점수 (0~${MAX_SCORE})`}}}
+    }
+  });
+
+  // Grade distribution (환산 70점 기준)
+  const gL=['A+','A','B+','B','C+','C','미성취(환류)'];
+  killChart('chCmpGrade');
+  S.charts.chCmpGrade=new Chart(document.getElementById('chCmpGrade'),{
+    type:'bar',
+    data:{labels:gL,datasets:classes.map((c,ci)=>{
+      const cnt=Array(7).fill(0);
+      c.students.forEach(s=>{
+        const p=s.pct;
+        if(p>=95)cnt[0]++;else if(p>=90)cnt[1]++;else if(p>=85)cnt[2]++;
+        else if(p>=80)cnt[3]++;else if(p>=75)cnt[4]++;else if(p>=70)cnt[5]++;
+        else cnt[6]++;  // 미성취(환류)
+      });
+      const n=c.students.length;
+      const colors=['#1d4ed8','#3b82f6','#7c3aed','#8b5cf6','#059669','#34d399','#dc2626'];
+      return{label:c.label,data:cnt.map(v=>n?Math.round((v/n)*1000)/10:0),
+        backgroundColor:colors.map(c=>c+'cc'),borderWidth:0,borderRadius:3};
+    })},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:10}}}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'비율(%)'}}}
+    }
+  });
+
+  // Overlapping histogram
+  const BL40=['0–3','4–7','8–11','12–15','16–19','20–23','24–27','28–31','32–35','36–40'];
+  killChart('chCmpHist');
+  S.charts.chCmpHist=new Chart(document.getElementById('chCmpHist'),{
+    type:'line',
+    data:{labels:BL40,datasets:classes.map((c,ci)=>{
+      const bins=Array(10).fill(0);
+      c.students.forEach(s=>{bins[Math.min(9,Math.floor(s.total/4))]++;});
+      const col=PAL[ci%PAL.length];
+      return{label:c.label,data:bins,borderColor:col.replace('.85','1'),
+        backgroundColor:col.replace('.85','.15'),fill:true,tension:.35,pointRadius:3};
+    })},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:10}}}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'학생 수(명)'}},
+        x:{title:{display:true,text:`점수 구간 (${MAX_SCORE}점 만점)`}}}
+    }
+  });
+
+  // Stats table
+  document.getElementById('tbCmp').innerHTML=stList.map(s=>`
+    <tr>
+      <td><strong>${s.lbl}</strong></td><td>${s.n}명</td>
+      <td>${s.mean!=null?s.mean.toFixed(2):'-'}<small style="color:var(--muted)">/${MAX_SCORE}</small></td>
+      <td>${s.med!=null?s.med.toFixed(1):'-'}</td>
+      <td>${s.sd!=null?s.sd.toFixed(2):'-'}</td>
+      <td>${s.max!=null?s.max.toFixed(1):'-'}</td>
+      <td>${s.min!=null?s.min.toFixed(1):'-'}</td>
+      <td>${s.passRate!=null?s.passRate.toFixed(1)+'%':'-'}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════
+// RENDER: 성적 현황 (파일3)
+// ═══════════════════════════
+function renderRank(students, cls){
+  if(!students||!students.length){setNoData('tp-rank','🏆','파일3 (종합성적현황)을 업로드하면 성적 현황이 표시됩니다.');return;}
+  const sorted=[...students].sort((a,b)=>b.total-a.total);
+  document.getElementById('tbRank').innerHTML=sorted.map((s,i)=>{
+    const rank=i+1;
+    // 40점 만점 → 100점 환산
+    const converted=Math.min(100,(s.total/MAX_SCORE)*100);
+    const g=gradeOf(converted);
+    return`<tr>
+      <td><strong>${rank}</strong></td>
+      <td>${s.cls||'-'}</td>
+      <td>${s.id}</td><td>${s.name}</td>
+      <td>${typeof s.total==='number'?s.total.toFixed(1):s.total} <small style="color:var(--muted)">/${MAX_SCORE}</small></td>
+      <td><strong>${converted.toFixed(1)}</strong></td>
+      <td><span class="bdg ${g.cls}">${g.lbl}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════
+// UI HELPERS
+// ═══════════════════════════
+function tab(name,btn){
+  document.querySelectorAll('.tab-pane').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('on'));
+  document.getElementById('tp-'+name).classList.add('on');
+  btn.classList.add('on');
+}
+
+function setNoData(paneId,icon,msg){
+  const pane=document.getElementById(paneId);
+  if(!pane.querySelector('.no-data')){
+    const d=document.createElement('div');
+    d.className='no-data';d.innerHTML=`<em>${icon}</em>${msg}`;
+    pane.appendChild(d);
+  }
+}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════════
+// PDF EXPORT  — 한글 헤더를 html2canvas로 렌더링
+// ═══════════════════════════════════════════════════
+const TAB_INFO = {
+  'tp-items':   {title:'문항분석 & 난이도', file:'문항분석_난이도'},
+  'tp-scores':  {title:'성적분포',          file:'성적분포'},
+  'tp-top10':   {title:'오답 TOP 10',       file:'오답TOP10'},
+  'tp-disc':    {title:'문항 변별도',       file:'문항변별도'},
+  'tp-compare': {title:'반별 분석',         file:'반별분석'},
+  'tp-rank':    {title:'성적 현황',         file:'성적현황'},
+};
+
+function showPdfLoading(status, sub){
+  document.getElementById('pdfOverlay').classList.add('show');
+  document.getElementById('pdfStatus').textContent = status;
+  document.getElementById('pdfSub').textContent    = sub;
+}
+function hidePdfLoading(){
+  document.getElementById('pdfOverlay').classList.remove('show');
+}
+
+// 임시 헤더 삽입 → 캡처 → 제거
+function makeTmpHeader(title, page){
+  const el = document.createElement('div');
+  el.className = 'pdf-tmp-hdr';
+  el.style.cssText = [
+    'background:linear-gradient(135deg,#1e40af,#5b21b6)',
+    'color:#fff','padding:11px 18px','margin-bottom:12px',
+    'border-radius:8px','display:flex','justify-content:space-between',
+    'align-items:center',
+    "font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif",
+  ].join(';');
+  const date = new Date().toLocaleDateString('ko-KR');
+  const pageStr = page > 1 ? ` (${page}페이지)` : '';
+  el.innerHTML =
+    `<strong style="font-size:14px">시험 성적 분석 대시보드 — ${title}${pageStr}</strong>` +
+    `<span style="font-size:10px;opacity:.85">생성일: ${date}</span>`;
+  return el;
+}
+
+async function capturePane(pane){
+  return await html2canvas(pane, {
+    scale: 2, useCORS: true, backgroundColor: '#f0f4f8',
+    logging: false, allowTaint: true,
+  });
+}
+
+async function exportTabPDF(tabId, _unused){
+  const info = TAB_INFO[tabId] || {title:tabId, file:tabId};
+  const pane = document.getElementById(tabId);
+  if(!pane){ toast('❌ 탭을 먼저 열어주세요'); return; }
+
+  showPdfLoading(`${info.title} PDF 생성 중…`, '화면 캡처 중');
+  await new Promise(r=>setTimeout(r,200));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+    const pdfW=210, pdfH=297, margin=8;
+    const avW=pdfW-margin*2, avH=pdfH-margin*2;
+    let   page=1, isFirst=true;
+
+    const renderSlices = async (canvas) => {
+      const pxPerMm = canvas.width / avW;
+      let yOff=0, remPx=canvas.height;
+      while(remPx > 0){
+        if(!isFirst){ pdf.addPage(); page++; isFirst=true; }
+        isFirst=false;
+        const sliceHpx = Math.min(remPx, avH*pxPerMm);
+        const sc = document.createElement('canvas');
+        sc.width=canvas.width; sc.height=sliceHpx;
+        sc.getContext('2d').drawImage(canvas,0,yOff,canvas.width,sliceHpx,0,0,canvas.width,sliceHpx);
+        pdf.addImage(sc.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,avW,sliceHpx/pxPerMm);
+        yOff+=sliceHpx; remPx-=sliceHpx;
+      }
+    };
+
+    // 헤더 삽입 → 캡처 → 제거
+    const hdr = makeTmpHeader(info.title, 1);
+    pane.insertBefore(hdr, pane.firstChild);
+    const canvas = await capturePane(pane);
+    pane.removeChild(hdr);
+
+    await renderSlices(canvas);
+    pdf.save(`${info.file}_${new Date().toISOString().slice(0,10)}.pdf`);
+    hidePdfLoading();
+    toast(`✅ ${info.title} PDF 저장 완료`);
+  } catch(e){
+    hidePdfLoading(); toast('❌ PDF 생성 실패: '+e.message); console.error(e);
+  }
+}
+
+async function exportCurrentTabPDF(){
+  const active = document.querySelector('.tab-pane.on');
+  if(!active){ toast('❌ 표시된 탭이 없습니다'); return; }
+  await exportTabPDF(active.id);
+}
+
+async function exportAllPDF(){
+  const ids = Object.keys(TAB_INFO).filter(id=>{
+    const btnId = 'tbtn-'+id.replace('tp-','');
+    return !document.getElementById(btnId)?.classList.contains('dim');
+  });
+  if(!ids.length){ toast('❌ 분석 데이터가 없습니다'); return; }
+
+  showPdfLoading('전체 분석 PDF 생성 중…', `총 ${ids.length}개 탭 준비 중`);
+  await new Promise(r=>setTimeout(r,200));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+    const pdfW=210, pdfH=297, margin=8;
+    const avW=pdfW-margin*2, avH=pdfH-margin*2;
+    let   globalPage=1, isFirst=true;
+
+    for(let ti=0; ti<ids.length; ti++){
+      const tabId = ids[ti];
+      const info  = TAB_INFO[tabId];
+      const pane  = document.getElementById(tabId);
+
+      document.getElementById('pdfSub').textContent =
+        `${ti+1}/${ids.length}: ${info.title} 캡처 중`;
+
+      // 숨겨진 탭 임시 표시
+      const hidden = !pane.classList.contains('on');
+      if(hidden){
+        pane.style.cssText='display:block;position:fixed;left:-9999px;top:0;width:'+
+          (document.getElementById('dash').offsetWidth)+'px;z-index:-1;visibility:visible';
+      }
+
+      const hdr = makeTmpHeader(info.title, globalPage);
+      pane.insertBefore(hdr, pane.firstChild);
+      await new Promise(r=>setTimeout(r,100));  // 차트 렌더링 대기
+      const canvas = await capturePane(pane);
+      pane.removeChild(hdr);
+
+      if(hidden) pane.style.cssText='';
+
+      const pxPerMm = canvas.width / avW;
+      let yOff=0, remPx=canvas.height;
+      while(remPx>0){
+        if(!isFirst){ pdf.addPage(); globalPage++; } isFirst=false;
+        const sliceHpx = Math.min(remPx, avH*pxPerMm);
+        const sc=document.createElement('canvas');
+        sc.width=canvas.width; sc.height=sliceHpx;
+        sc.getContext('2d').drawImage(canvas,0,yOff,canvas.width,sliceHpx,0,0,canvas.width,sliceHpx);
+        pdf.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,avW,sliceHpx/pxPerMm);
+        yOff+=sliceHpx; remPx-=sliceHpx; globalPage++;
+      }
+    }
+
+    pdf.save(`시험성적분석_전체_${new Date().toISOString().slice(0,10)}.pdf`);
+    hidePdfLoading();
+    toast(`✅ 전체 분석 PDF 저장 완료 (${globalPage}페이지)`);
+  } catch(e){
+    hidePdfLoading(); toast('❌ PDF 생성 실패: '+e.message); console.error(e);
+  }
+}
+const sortState={};
+function sortTbl(id,col){
+  const tbl=document.getElementById(id);
+  const key=`${id}_${col}`;
+  const asc=sortState[key]!=='asc';
+  sortState[key]=asc?'asc':'desc';
+  tbl.querySelectorAll('th').forEach((th,i)=>{th.classList.remove('sa','sd');if(i===col)th.classList.add(asc?'sa':'sd');});
+  const rows=[...tbl.querySelector('tbody').querySelectorAll('tr')];
+  rows.sort((a,b)=>{
+    const va=a.cells[col]?.textContent.replace(/[%명점위\/]/g,'').trim();
+    const vb=b.cells[col]?.textContent.replace(/[%명점위\/]/g,'').trim();
+    const na=parseFloat(va),nb=parseFloat(vb);
+    if(!isNaN(na)&&!isNaN(nb)) return asc?na-nb:nb-na;
+    return asc?va.localeCompare(vb,'ko'):vb.localeCompare(va,'ko');
+  });
+  rows.forEach(r=>tbl.querySelector('tbody').appendChild(r));
+}
+</script>
+</body>
+</html>
