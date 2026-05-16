@@ -22,8 +22,13 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
 .hdr-right{margin-left:auto}
 .reset-btn{padding:6px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;font-size:12px;cursor:pointer}
 .reset-btn:hover{background:rgba(255,255,255,.25)}
-.ai-btn{padding:6px 16px;background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:5px}
-.ai-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 3px 10px rgba(245,158,11,.5)}
+@keyframes geminiShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.ai-btn{padding:6px 16px;background:linear-gradient(-45deg,#4285F4,#9C27B0,#00BCD4,#7C4DFF,#E91E63,#4285F4);background-size:400% 400%;animation:geminiShift 5s ease infinite;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:transform .2s,box-shadow .2s}
+.ai-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(124,77,255,.55)}
 /* AI MODAL */
 .ai-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
 .ai-overlay.show{display:flex}
@@ -68,8 +73,8 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
 .stag{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
 
 
-.run-btn{width:100%;padding:12px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:.2s;display:none}
-.run-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(220,38,38,.5)}
+.run-btn{width:100%;padding:13px;background:linear-gradient(-45deg,#4285F4,#9C27B0,#00BCD4,#7C4DFF,#E91E63,#4285F4);background-size:400% 400%;animation:geminiShift 5s ease infinite;color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;display:none;transition:transform .2s,box-shadow .2s;letter-spacing:.3px}
+.run-btn:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(124,77,255,.6)}
 .run-btn.show{display:block}
 .loading{display:none;text-align:center;padding:40px}
 .loading.show{display:block}
