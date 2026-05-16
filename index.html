@@ -41,16 +41,9 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
 .sheet-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
 .stag{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
 
-.fmt-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:10px}
-.fmt-panel summary{font-size:12px;font-weight:600;cursor:pointer;color:var(--muted)}
-.fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
-.fmt-item{background:var(--bg);border-radius:8px;padding:10px 12px}
-.fmt-item strong{font-size:11px;display:block;margin-bottom:4px}
-.fmt-item p{font-size:10px;color:var(--muted);line-height:1.55}
-.fmt-item code{background:#e2e8f0;padding:1px 4px;border-radius:3px;font-size:10px}
 
-.run-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:.2s;display:none}
-.run-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.4)}
+.run-btn{width:100%;padding:12px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:.2s;display:none}
+.run-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(220,38,38,.5)}
 .run-btn.show{display:block}
 .loading{display:none;text-align:center;padding:40px}
 .loading.show{display:block}
@@ -140,8 +133,8 @@ tr:hover td{background:#f8fafc}
 .exp-btn.pdf{border-color:#ef4444;color:#ef4444}
 .exp-btn.pdf:hover{background:#fef2f2;border-color:#dc2626}
 .pdf-all-bar{display:flex;justify-content:flex-end;margin-bottom:10px;gap:8px}
-.pdf-all-btn{padding:7px 16px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:5px}
-.pdf-all-btn:hover{background:#dc2626;transform:translateY(-1px);box-shadow:0 3px 8px rgba(239,68,68,.4)}
+.pdf-all-btn{padding:7px 16px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:5px}
+.pdf-all-btn:hover{background:#15803d;transform:translateY(-1px);box-shadow:0 3px 8px rgba(22,163,74,.4)}
 .pdf-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;display:none}
 .pdf-overlay.show{display:flex}
 .pdf-box{background:#fff;border-radius:14px;padding:28px 36px;text-align:center;min-width:260px}
@@ -217,27 +210,6 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
-<details class="fmt-panel">
-  <summary>📌 파일 형식 가이드 (클릭)</summary>
-  <div class="fmt-grid">
-    <div class="fmt-item"><strong>📋 파일1 · 문항분석표</strong>
-      <p>1행: 헤더, 2행↓: 문항1~<span class="ms-dyn">40</span><br>
-      열: <code>번호|정답률|변별도|난이도|평균|표준편차</code><br>
-      정답률·평균은 0~1 또는 0~100 자동 인식<br>
-      난이도는 숫자 또는 텍스트(쉬움/보통 등)</p>
-    </div>
-    <div class="fmt-item"><strong>📊 파일2 · 성적분포도</strong>
-      <p>형식① 빈도표: <code>점수|인원수</code><br>
-      형식② 개인별: <code>번호|이름|점수</code><br>
-      점수 범위 0~100 (두 형식 자동 인식)</p>
-    </div>
-    <div class="fmt-item"><strong>🗂️ 파일3 · 종합성적현황</strong>
-      <p>시트명 = 반 이름 (1반, 2반…)<br>
-      열: <code>번호|이름|점수</code> (<span class="ms-dyn">40</span>점 만점)<br>
-      시트 수 제한 없음 · 반별/전체 선택 분석</p>
-    </div>
-  </div>
-</details>
 
 
 <button class="run-btn" id="runBtn" onclick="runAnalysis()">📊 성적 분석 시작</button>
@@ -267,7 +239,7 @@ tr:hover td{background:#f8fafc}
   <!-- 전체 PDF 버튼 -->
   <div class="pdf-all-bar">
     <button class="pdf-all-btn" onclick="exportAllPDF()">📄 전체 분석 PDF 저장</button>
-    <button class="pdf-all-btn" style="background:#64748b" onclick="exportCurrentTabPDF()">📄 현재 탭 PDF 저장</button>
+    <button class="pdf-all-btn" style="background:#059669" onclick="exportCurrentTabPDF()">📄 현재 탭 PDF 저장</button>
   </div>
 
   <!-- TABS -->
@@ -362,6 +334,21 @@ tr:hover td{background:#f8fafc}
     <div class="card">
       <div class="card-ttl">📈 누적 분포 곡선</div>
       <div class="ch"><canvas id="chCdf"></canvas></div>
+    </div>
+
+    <!-- 성적분포 CSV 내보내기 (숨김 테이블) -->
+    <div class="card">
+      <div class="card-ttl">📋 성적 분포 데이터 내보내기</div>
+      <div class="tbl-wrap"><table id="tScores">
+        <thead><tr>
+          <th>항목</th><th>값(원점수)</th><th>환산점수</th>
+        </tr></thead>
+        <tbody id="tbScores"></tbody>
+      </table></div>
+      <div class="exp-btns">
+        <button class="exp-btn" onclick="saveCsv('tScores','성적분포통계')">CSV (통계)</button>
+        <button class="exp-btn" onclick="saveDistCsv()">CSV (점수별 분포)</button>
+      </div>
     </div>
   </div>
 
@@ -466,7 +453,7 @@ tr:hover td{background:#f8fafc}
         </tr></thead>
         <tbody id="tbCmp"></tbody>
       </table></div>
-      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tCmp','반별비교')">CSV</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-compare','반별분석')">PDF</button></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tCmp','반별비교')">CSV</button></div>
     </div>
   </div>
 
@@ -488,7 +475,7 @@ tr:hover td{background:#f8fafc}
         </tr></thead>
         <tbody id="tbRank"></tbody>
       </table></div>
-      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tRank','성적현황')">CSV</button><button class="exp-btn pdf" onclick="exportTabPDF('tp-rank','성적현황')">PDF</button></div>
+      <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tRank','성적현황')">CSV</button></div>
     </div>
   </div>
 </div><!-- /dash -->
@@ -527,8 +514,14 @@ function loadFile(inp, slot) {
       const skip = SKIP_ROWS[slot] ?? 0;
       const opts = {defval:'', raw:false, range: skip};   // range = 0-based 헤더 행 번호
       if(slot === 2) {
+        // Sheet1(전체): 1~6행 제외(range:6), 반별 시트: 첫 행이 헤더(range:0)
+        const TOTAL_PAT = /^sheet\d+$|^전체$|^종합$|^all$|^total$/i;
         const sheets = wb.SheetNames
-          .map(n => ({name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], opts)}))
+          .map(n => {
+            const isTotal = TOTAL_PAT.test(n.trim());
+            const sheetOpts = {defval:'', raw:false, range: isTotal ? SKIP_ROWS[2] : 0};
+            return {name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], sheetOpts)};
+          })
           .filter(s => s.rows.length > 0);
         S.raw[2] = {name:f.name, sheets};
         document.getElementById('ico2').textContent = '✅';
@@ -1442,18 +1435,33 @@ function renderScores(f2){
          + `<span style="color:var(--p1);font-size:10px;margin-left:3px">(환산 ${conv.toFixed(1)}점)</span>`;
   }
 
-  document.getElementById('statGrid').innerHTML=[
-    ['평균',            fmtDual(st.mean)],
-    ['중앙값',          fmtDual(st.med)],
-    ['표준편차',        st.sd!=null?`${st.sd.toFixed(2)}`:'-'],
-    ['최고점',          fmtDual(st.max)],
-    ['최저점',          fmtDual(st.min)],
-    ['범위',            (st.max!=null&&st.min!=null)?fmtDual(st.max-st.min):'-'],
-    ['Q1 (하위25%)',    fmtDual(st.q1)],
-    ['Q3 (상위75%)',    fmtDual(st.q3)],
-    ['통과율(환산≥70점)',st.passRate!=null?st.passRate.toFixed(1)+'%':'-'],
-    ['총 학생',         st.n!=null?st.n+'명':'-']
-  ].map(([l,v])=>`<div class="stat-item"><span class="stat-lbl">${l}</span><span class="stat-val" style="text-align:right">${v}</span></div>`).join('');
+  const statRows = [
+    ['평균',            fmtDual(st.mean),   st.mean],
+    ['중앙값',          fmtDual(st.med),    st.med],
+    ['표준편차',        st.sd!=null?`${st.sd.toFixed(2)}`:'-', st.sd],
+    ['최고점',          fmtDual(st.max),    st.max],
+    ['최저점',          fmtDual(st.min),    st.min],
+    ['범위',            (st.max!=null&&st.min!=null)?fmtDual(st.max-st.min):'-', st.max!=null&&st.min!=null?st.max-st.min:null],
+    ['Q1 (하위25%)',    fmtDual(st.q1),     st.q1],
+    ['Q3 (상위75%)',    fmtDual(st.q3),     st.q3],
+    ['통과율(환산≥70점)',st.passRate!=null?st.passRate.toFixed(1)+'%':'-', null],
+    ['총 학생',         st.n!=null?st.n+'명':'-', null],
+  ];
+
+  document.getElementById('statGrid').innerHTML = statRows
+    .map(([l,v])=>`<div class="stat-item"><span class="stat-lbl">${l}</span><span class="stat-val" style="text-align:right">${v}</span></div>`)
+    .join('');
+
+  // CSV용 통계 테이블 채우기
+  const toR = v => v!=null?Math.round(v*MAX_SCORE/100*10)/10:'-';
+  const toC = v => v!=null?Math.round(v*10)/10:'-';
+  document.getElementById('tbScores').innerHTML = statRows.map(([l,,raw])=>{
+    if(raw==null) return `<tr><td>${l}</td><td colspan="2">-</td></tr>`;
+    return `<tr><td>${l}</td><td>${isConv?toR(raw).toFixed!==undefined?toR(raw).toFixed(1):toR(raw):raw.toFixed(1)}</td><td>${isConv?toC(raw).toFixed(1):Math.round(raw*100/MAX_SCORE*10)/10}</td></tr>`;
+  }).join('');
+
+  // 분포 데이터를 S에 저장 (saveDistCsv에서 사용)
+  S._scores = {dist, isConv};
 }
 
 // ═══════════════════════════
@@ -1738,10 +1746,57 @@ function setNoData(paneId,icon,msg){
   }
 }
 
+// 점수별 분포 CSV (성적분포도)
+function saveDistCsv(){
+  const sd = S._scores;
+  if(!sd||!sd.dist||!sd.dist.length){ toast('❌ 성적분포 데이터가 없습니다'); return; }
+  const rows = [['점수(환산)', '원점수', '학생수', '비율(%)']];
+  const total = sd.dist.reduce((n,d)=>n+d.count,0)||1;
+  const sorted = [...sd.dist].sort((a,b)=>a.score-b.score);
+  sorted.forEach(d=>{
+    if(d.count<=0) return;
+    const raw = sd.isConv ? (d.score*MAX_SCORE/100).toFixed(1) : d.score.toFixed(1);
+    const conv= sd.isConv ? d.score : (d.score*100/MAX_SCORE).toFixed(1);
+    rows.push([conv, raw, d.count, (d.count/total*100).toFixed(1)]);
+  });
+  const csv = rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.download=`성적분포_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href=URL.createObjectURL(blob); a.click();
+  toast('CSV 다운로드 완료');
+}
+
 function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function savePng(id){
+  const canvas=document.getElementById(id);
+  if(!canvas){toast('❌ 차트를 찾을 수 없습니다');return;}
+  const a=document.createElement('a');
+  a.download=`${id}_${new Date().toISOString().slice(0,10)}.png`;
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+  toast('PNG 저장 완료');
+}
+
+function saveCsv(tblId, fname){
+  const tbl=document.getElementById(tblId);
+  if(!tbl){toast('❌ 데이터가 없습니다');return;}
+  const rows=[...tbl.querySelectorAll('tr')];
+  if(!rows.length){toast('❌ 데이터가 없습니다');return;}
+  const csv=rows.map(r=>[...r.querySelectorAll('th,td')]
+    .map(c=>`"${c.textContent.trim().replace(/"/g,'""')}"`)
+    .join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.download=`${fname}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href=URL.createObjectURL(blob);
+  a.click();
+  toast('CSV 다운로드 완료');
 }
 
 // ═══════════════════════════════════════════════════
