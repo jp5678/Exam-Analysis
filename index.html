@@ -258,7 +258,7 @@ tr:hover td{background:#f8fafc}
     <div class="sum-card"><div class="sum-lbl" id="c-max-lbl">최고점</div><div class="sum-val" id="c-max">-</div><div class="sum-sub" id="c-max-sub">(환산 -점)</div></div>
     <div class="sum-card"><div class="sum-lbl" id="c-min-lbl">최저점</div><div class="sum-val" id="c-min">-</div><div class="sum-sub" id="c-min-sub">(환산 -점)</div></div>
     <div class="sum-card"><div class="sum-lbl" id="c-sd-lbl">표준편차</div><div class="sum-val" id="c-sd">-</div><div class="sum-sub">점(원점수)</div></div>
-    <div class="sum-card"><div class="sum-lbl" id="c-pass-lbl">통과율 (환산 70점↑)</div><div class="sum-val" id="c-pass">-</div><div class="sum-sub">%</div></div>
+    <div class="sum-card"><div class="sum-lbl" id="c-pass-lbl">성취율 (환산 70점↑)</div><div class="sum-val" id="c-pass">-</div><div class="sum-sub">%</div></div>
   </div>
 
   <!-- PDF 로딩 오버레이 -->
@@ -483,12 +483,27 @@ tr:hover td{background:#f8fafc}
           <th onclick="sortTbl('tCmp',4)">표준편차</th>
           <th onclick="sortTbl('tCmp',5)">최고점</th>
           <th onclick="sortTbl('tCmp',6)">최저점</th>
-          <th onclick="sortTbl('tCmp',7)">통과율</th>
+          <th onclick="sortTbl('tCmp',7)">성취율(환산≥70점)</th>
         </tr></thead>
         <tbody id="tbCmp"></tbody>
       </table></div>
       <div class="exp-btns"><button class="exp-btn" onclick="saveCsv('tCmp','반별비교')">CSV</button></div>
     </div>
+
+    <!-- 반별 미성취 학생 목록 -->
+    <div class="card">
+      <div class="card-ttl">🔴 반별 미성취(환류) 학생 현황 <small>환산점수 70점 미만</small></div>
+      <div id="remedialByClass"></div>
+      <div class="exp-btns" style="margin-top:10px">
+        <button class="exp-btn" onclick="saveCsv('tRemedial','미성취학생목록')">CSV</button>
+      </div>
+    </div>
+
+    <!-- 미성취 전체 테이블 (CSV용 숨김) -->
+    <table id="tRemedial" style="display:none">
+      <thead><tr><th>반</th><th>학번</th><th>이름</th><th>점수</th><th>환산점수</th><th>성취수준</th></tr></thead>
+      <tbody id="tbRemedial"></tbody>
+    </table>
   </div>
 
   <!-- ⑥ 성적 현황 (파일3) -->
@@ -501,7 +516,7 @@ tr:hover td{background:#f8fafc}
         <thead><tr>
           <th onclick="sortTbl('tRank',0)">석차</th>
           <th onclick="sortTbl('tRank',1)">반</th>
-          <th onclick="sortTbl('tRank',2)">번호</th>
+          <th onclick="sortTbl('tRank',2)">학번</th>
           <th onclick="sortTbl('tRank',3)">이름</th>
           <th onclick="sortTbl('tRank',4)" id="th-rank-score">점수(<span class="ms-dyn">40</span>점)</th>
           <th onclick="sortTbl('tRank',5)">환산점수(100점)</th>
@@ -1001,7 +1016,7 @@ function resetSumLabels(){
   document.getElementById('c-max-lbl').textContent = '최고점';
   document.getElementById('c-min-lbl').textContent = '최저점';
   document.getElementById('c-sd-lbl').textContent  = '표준편차';
-  document.getElementById('c-pass-lbl').textContent= '통과율 (환산 70점↑)';
+  document.getElementById('c-pass-lbl').textContent= '성취율 (환산 70점↑)';
 }
 
 // isConvScale: true → st 값이 0~100 환산점수 기준 / false → 0~40 원점수 기준
@@ -1478,8 +1493,8 @@ function renderScores(f2){
     ['범위',            (st.max!=null&&st.min!=null)?fmtDual(st.max-st.min):'-', st.max!=null&&st.min!=null?st.max-st.min:null],
     ['Q1 (하위25%)',    fmtDual(st.q1),     st.q1],
     ['Q3 (상위75%)',    fmtDual(st.q3),     st.q3],
-    ['통과율(환산≥70점)',st.passRate!=null?st.passRate.toFixed(1)+'%':'-', null],
-    ['총 학생',         st.n!=null?st.n+'명':'-', null],
+    ['성취율(환산≥70점)',st.passRate!=null?st.passRate.toFixed(1)+'%':'-', 'PASS'],
+    ['총 학생',         st.n!=null?st.n+'명':'-', 'COUNT'],
   ];
 
   document.getElementById('statGrid').innerHTML = statRows
@@ -1489,9 +1504,12 @@ function renderScores(f2){
   // CSV용 통계 테이블 채우기
   const toR = v => v!=null?Math.round(v*MAX_SCORE/100*10)/10:'-';
   const toC = v => v!=null?Math.round(v*10)/10:'-';
-  document.getElementById('tbScores').innerHTML = statRows.map(([l,,raw])=>{
-    if(raw==null) return `<tr><td>${l}</td><td colspan="2">-</td></tr>`;
-    return `<tr><td>${l}</td><td>${isConv?toR(raw).toFixed!==undefined?toR(raw).toFixed(1):toR(raw):raw.toFixed(1)}</td><td>${isConv?toC(raw).toFixed(1):Math.round(raw*100/MAX_SCORE*10)/10}</td></tr>`;
+  const passN = st.n!=null&&st.passRate!=null ? Math.round(st.n*st.passRate/100) : null;
+  document.getElementById('tbScores').innerHTML = statRows.map(([l,disp,raw])=>{
+    if(raw==='PASS')  return `<tr><td>${l}</td><td>${disp}</td><td>${passN!=null?passN+'명':'-'} / 기준 ${PASS_RAW}점(환산${Math.round(PASS_RAW*100/MAX_SCORE)}점)</td></tr>`;
+    if(raw==='COUNT') return `<tr><td>${l}</td><td>${disp}</td><td>-</td></tr>`;
+    if(raw==null)     return `<tr><td>${l}</td><td colspan="2">-</td></tr>`;
+    return `<tr><td>${l}</td><td>${isConv?toR(raw)!=null&&toR(raw).toFixed?toR(raw).toFixed(1):toR(raw):raw.toFixed(1)}</td><td>${isConv?toC(raw).toFixed(1):Math.round(raw*100/MAX_SCORE*10)/10}</td></tr>`;
   }).join('');
 
   // 분포 데이터를 S에 저장 (saveDistCsv에서 사용)
@@ -1737,6 +1755,78 @@ function renderCompare(classes){
       <td>${s.min!=null?s.min.toFixed(1):'-'}</td>
       <td>${s.passRate!=null?s.passRate.toFixed(1)+'%':'-'}</td>
     </tr>`).join('');
+
+  // ── 반별 미성취(환류) 학생 목록 ───────────────
+  renderRemedial(classes);
+}
+
+function renderRemedial(classes){
+  if(!classes||!classes.length) return;
+
+  // 전체 미성취 CSV 테이블 채우기
+  const allRemedial = classes.flatMap(c =>
+    c.students
+      .filter(s=>s.pct<70)
+      .sort((a,b)=>a.pct-b.pct)
+      .map(s=>({...s,cls:c.label}))
+  );
+  document.getElementById('tbRemedial').innerHTML = allRemedial.map(s=>{
+    const conv=Math.round(s.pct*10)/10;
+    return `<tr><td>${s.cls}</td><td>${s.id}</td><td>${s.name}</td>`
+         + `<td>${s.total.toFixed(1)}</td><td>${conv.toFixed(1)}</td><td>미성취(환류)</td></tr>`;
+  }).join('');
+
+  // 반별 카드 생성
+  if(!allRemedial.length){
+    document.getElementById('remedialByClass').innerHTML =
+      '<div style="text-align:center;padding:24px;color:var(--ok);font-weight:600">✅ 미성취 학생이 없습니다.</div>';
+    return;
+  }
+
+  const PAL=['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2'];
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:4px">`;
+
+  classes.forEach((c,ci)=>{
+    const list = c.students.filter(s=>s.pct<70).sort((a,b)=>a.pct-b.pct);
+    const col  = PAL[ci%PAL.length];
+    const pct  = c.students.length ? ((list.length/c.students.length)*100).toFixed(1) : 0;
+
+    html += `<div style="border:2px solid ${col}33;border-radius:10px;overflow:hidden">
+      <div style="background:${col};color:#fff;padding:9px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700">
+        <span>${c.label}반</span>
+        <span>${list.length}명 (${pct}%)</span>
+      </div>`;
+
+    if(!list.length){
+      html += `<div style="padding:12px 14px;font-size:11px;color:var(--ok)">✅ 미성취 학생 없음</div>`;
+    } else {
+      html += `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="background:#f8fafc">
+          <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)">학번</th>
+          <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)">이름</th>
+          <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)">점수</th>
+          <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)">환산</th>
+        </tr></thead>
+        <tbody>`;
+      list.forEach(s=>{
+        const conv=Math.round(s.pct*10)/10;
+        html += `<tr>
+          <td style="padding:5px 8px;text-align:center;border-bottom:1px solid var(--border)">${s.id}</td>
+          <td style="padding:5px 8px;text-align:center;border-bottom:1px solid var(--border);font-weight:600">${s.name}</td>
+          <td style="padding:5px 8px;text-align:center;border-bottom:1px solid var(--border)">${s.total.toFixed(1)}</td>
+          <td style="padding:5px 8px;text-align:center;border-bottom:1px solid var(--border);color:#dc2626;font-weight:700">${conv.toFixed(1)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+    }
+    html += `</div>`;
+  });
+  html += `</div>
+    <div style="margin-top:10px;padding:10px 14px;background:#fef2f2;border-radius:8px;font-size:11px;color:#dc2626;font-weight:600">
+      ⚠️ 전체 미성취 학생: ${allRemedial.length}명 — 환산점수 70점 미만, 환류 교육 대상자
+    </div>`;
+
+  document.getElementById('remedialByClass').innerHTML = html;
 }
 
 // ═══════════════════════════
@@ -1967,7 +2057,7 @@ function buildAIReport(){
       {label:'성적 저조 반', value:`${worst.lbl}반 (평균 ${f(worst.mean)}점)`, tag:'warn'},
       {label:'반간 평균 격차', value:`${f(gap)}점`, tag:gap>5?'warn':'ok'},
       ...stList.map(s=>({label:`${s.lbl}반`,
-        value:`평균 ${f(s.mean)}점, 통과율 ${fp(s.passRate)}, SD ${f(s.sd)}`})),
+        value:`평균 ${f(s.mean)}점, 성취율 ${fp(s.passRate)}, SD ${f(s.sd)}`})),
     ]);
   }
 
