@@ -511,23 +511,31 @@ const S = { raw:[null,null,null], f1:null, f2:null, f3:null,
 // ═══════════════════════════
 // FILE UPLOAD
 // ═══════════════════════════
+// 파일별 건너뛸 행 수 (1행~N행 제외 → N행이 머리글)
+// slot 0(문항분석표): 1~5행 제외 → 6행이 헤더 → range:5
+// slot 1(성적분포도): 1~6행 제외 → 7행이 헤더 → range:6
+// slot 2(종합성적현황): 1~6행 제외 → 7행이 헤더 → range:6
+const SKIP_ROWS = [5, 6, 6];
+
 function loadFile(inp, slot) {
   const f = inp.files[0]; if(!f) return;
   const rd = new FileReader();
   rd.onload = e => {
     try {
-      const buf = new Uint8Array(e.target.result);
-      const wb  = XLSX.read(buf, {type:'array'});
+      const buf  = new Uint8Array(e.target.result);
+      const wb   = XLSX.read(buf, {type:'array'});
+      const skip = SKIP_ROWS[slot] ?? 0;
+      const opts = {defval:'', raw:false, range: skip};   // range = 0-based 헤더 행 번호
       if(slot === 2) {
         const sheets = wb.SheetNames
-          .map(n => ({name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:'',raw:false})}))
+          .map(n => ({name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], opts)}))
           .filter(s => s.rows.length > 0);
         S.raw[2] = {name:f.name, sheets};
         document.getElementById('ico2').textContent = '✅';
         document.getElementById('st2').textContent  = `${sheets.length}개 반, 총 ${sheets.reduce((n,s)=>n+s.rows.length,0)}행`;
         document.getElementById('stags2').innerHTML = sheets.map(s=>`<span class="stag">${s.name}</span>`).join('');
       } else {
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:'',raw:false});
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], opts);
         S.raw[slot] = {name:f.name, rows};
         document.getElementById(`ico${slot}`).textContent = '✅';
         document.getElementById(`st${slot}`).textContent  = `${rows.length}행 로드됨`;
