@@ -20,8 +20,10 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
 .hdr{background:linear-gradient(135deg,#1e40af,#5b21b6);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(30,64,175,.3)}
 .hdr-icon{font-size:28px}.hdr h1{font-size:20px;font-weight:700}.hdr p{font-size:12px;opacity:.8;margin-top:2px}
 .hdr-right{margin-left:auto}
-.reset-btn{padding:6px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;font-size:12px;cursor:pointer}
-.reset-btn:hover{background:rgba(255,255,255,.25)}
+.reset-btn{padding:6px 14px;background:#ef4444;border:1px solid #dc2626;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.reset-btn:hover{background:#dc2626;box-shadow:0 2px 8px rgba(220,38,38,.45)}
+.manual-btn{padding:6px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.manual-btn:hover{background:rgba(255,255,255,.25)}
 @keyframes geminiShift{
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
@@ -195,6 +197,39 @@ tr:hover td{background:#f8fafc}
 @media(max-width:700px){.wrap{padding:10px}.up-grid{grid-template-columns:1fr}.sum-grid{grid-template-columns:repeat(2,1fr)}.g11,.g3{grid-template-columns:1fr}.diff-classify{grid-template-columns:repeat(2,1fr)}}
 
 /* ── FOOTER ── */
+
+/* ── CQI REPORT ── */
+.cqi-info-bar{display:grid;grid-template-columns:auto 1fr auto 1fr auto 1fr auto 1fr;gap:8px 10px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:12px}
+.cqi-info-bar label{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+.cqi-input{padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;width:100%;font-family:inherit}
+.cqi-input:focus{outline:none;border-color:var(--p1)}
+.cqi-gen-btn{width:100%;padding:12px;background:linear-gradient(-45deg,#4285F4,#9C27B0,#00BCD4,#7C4DFF,#E91E63,#4285F4);background-size:400% 400%;animation:geminiShift 5s ease infinite;color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;transition:transform .2s,box-shadow .2s}
+.cqi-gen-btn:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(124,77,255,.6)}
+.cqi-report{background:#fff;border-radius:var(--r);padding:28px 32px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.cqi-report-hdr{text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--p1)}
+.cqi-report-title{font-size:18px;font-weight:800;color:var(--txt)}
+.cqi-report-sub{font-size:12px;color:var(--muted);margin-top:5px}
+.cqi-section{margin-bottom:22px}
+.cqi-section-title{font-size:13px;font-weight:700;color:#fff;background:var(--p1);padding:7px 14px;border-radius:6px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cqi-kv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.cqi-kv{background:var(--bg);border-radius:8px;padding:10px 12px;text-align:center}
+.cqi-kv-lbl{font-size:10px;color:var(--muted);margin-bottom:2px}
+.cqi-kv-val{font-size:16px;font-weight:700;color:var(--txt)}
+.cqi-kv-sub{font-size:9px;color:var(--muted)}
+.cqi-kv.hi{border-left:3px solid var(--ok)}.cqi-kv.lo{border-left:3px solid var(--err)}.cqi-kv.md{border-left:3px solid var(--warn)}
+.cqi-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+.cqi-table th{background:#f1f5f9;padding:7px 10px;text-align:center;font-weight:600;color:var(--muted);border:1px solid var(--border)}
+.cqi-table td{padding:6px 10px;text-align:center;border:1px solid var(--border)}
+.cqi-table tr:nth-child(even) td{background:#fafafa}
+.cqi-textarea{width:100%;min-height:80px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.6}
+.cqi-textarea:focus{outline:none;border-color:var(--p1)}
+.cqi-exp-bar{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.cqi-no-data{text-align:center;padding:48px;color:var(--muted)}
+.cqi-sec-num{font-size:12px;font-weight:700;color:#1e40af;background:#eff6ff;border-left:4px solid #2563eb;padding:7px 14px;border-radius:0 6px 6px 0;margin:14px 0 8px}
+.cqi-select{padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;width:100%;font-family:inherit;background:#fff}
+.cqi-select:focus{outline:none;border-color:var(--p1)}
+@media(max-width:900px){.cqi-info-bar{grid-template-columns:auto 1fr auto 1fr}.cqi-kv-grid{grid-template-columns:repeat(2,1fr)}}
+
 .site-footer{background:linear-gradient(135deg,#1e40af 0%,#5b21b6 100%);color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:center;gap:16px;margin-top:32px}
 .footer-logo{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.6);flex-shrink:0}
 .footer-info{display:flex;flex-direction:column;gap:3px}
@@ -210,6 +245,7 @@ tr:hover td{background:#f8fafc}
   <div class="hdr-right" style="display:flex;gap:10px;align-items:center">
     <button class="ai-btn" onclick="runAIAnalysis()">🤖 AI 분석</button>
     <button class="reset-btn" onclick="resetAll()">🔄 초기화</button>
+    <button class="manual-btn" onclick="window.open('manual.html','_blank')">📖 메뉴얼</button>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -284,6 +320,7 @@ tr:hover td{background:#f8fafc}
     <button class="tab-btn"     onclick="tab('disc',this)"   id="tbtn-disc">🎯 문항 변별도</button>
     <button class="tab-btn"     onclick="tab('compare',this)"id="tbtn-compare">⚖️ 반별 분석</button>
     <button class="tab-btn"     onclick="tab('rank',this)"   id="tbtn-rank">🏆 성적 현황</button>
+    <button class="tab-btn"     onclick="tab('cqi',this)"    id="tbtn-cqi">📑 CQI 보고서</button>
   </div>
 
   <!-- ① 문항분석 (파일1) -->
@@ -634,6 +671,23 @@ function resetAll(){
   MAX_SCORE=40; PASS_RAW=28; updateDynamicLabels();
   document.getElementById('runBtn').classList.remove('show');
   document.getElementById('dash').classList.remove('show');
+  // CQI 초기화
+  document.getElementById('cqiReport').innerHTML=
+    '<div class="cqi-no-data"><span style="font-size:32px;display:block;margin-bottom:10px">📑</span>'+
+    '교과목 정보를 입력하고 <strong>CQI 보고서 자동 생성</strong> 버튼을 클릭하세요.<br>'+
+    '<small style="color:var(--muted)">파일1·2·3 데이터를 기반으로 자동 분석됩니다.</small></div>';
+  document.getElementById('cqiExpBar').style.display='none';
+  document.getElementById('cqi-subject').value='';
+  document.getElementById('cqi-semester').value='';
+  document.getElementById('cqi-professor').value='제프리 교수';
+  document.getElementById('cqi-dept').value='간호학과';
+  document.getElementById('cqi-grade').value='';
+  document.getElementById('cqi-credit').value='';
+  document.getElementById('cqi-org').value='청암대학교 간호학과';
+  document.getElementById('cqi-po').value='';
+  document.getElementById('cqi-po-name').value='';
+  document.getElementById('cqi-po-level').value='';
+  document.getElementById('cqi-po-ratio').value='';
 }
 
 // ═══════════════════════════
@@ -1124,7 +1178,7 @@ function selectClass(cls){
   }
 
   // Render compare and rank
-  const classesToShow = cls==='all' ? S.f3 : S.f3.filter(c=>c.label===cls);
+  const classesToShow = cls==='all' ? (S.f3||[]) : (S.f3||[]).filter(c=>c.label===cls);
   renderCompare(classesToShow);
   renderRank(students, cls);
   document.getElementById('rankTitle').textContent = cls==='all'?'전체':cls;
@@ -1374,22 +1428,20 @@ function renderScores(f2){
   // ── 환산점수 기준으로 dist 점수 정규화 ──
   const toConvScore = s => isConv ? s : Math.round(s*100/MAX_SCORE*10)/10;
 
-  // ── 성취수준 등급 구간 (A+~F) ──
+  // ── 성취수준 등급 구간 — gradeOf()와 동일한 7구간 ──
   const GRADE_BANDS = [
-    {lbl:'A+', min:95, col:'#1d4ed8'},
-    {lbl:'A',  min:90, col:'#3b82f6'},
-    {lbl:'B+', min:85, col:'#7c3aed'},
-    {lbl:'B',  min:80, col:'#8b5cf6'},
-    {lbl:'C+', min:75, col:'#059669'},
-    {lbl:'C',  min:70, col:'#34d399'},
-    {lbl:'D+', min:65, col:'#d97706'},
-    {lbl:'D',  min:60, col:'#f59e0b'},
-    {lbl:'F',  min:0,  col:'#dc2626'},
+    {lbl:'A+',         min:95, col:'#1d4ed8'},
+    {lbl:'A',          min:90, col:'#3b82f6'},
+    {lbl:'B+',         min:85, col:'#7c3aed'},
+    {lbl:'B',          min:80, col:'#8b5cf6'},
+    {lbl:'C+',         min:75, col:'#059669'},
+    {lbl:'C',          min:70, col:'#34d399'},
+    {lbl:'미성취(환류)',min:0,  col:'#dc2626'},
   ];
   // 각 구간 레이블: 등급(원점수/환산점수)
   const gradeBandLabels = GRADE_BANDS.map((b,i)=>{
-    const raw  = Math.round(b.min * MAX_SCORE/100);
-    if(b.lbl==='F') return `F(<${Math.round(60*MAX_SCORE/100)}점/<60점)`;
+    const raw = Math.round(b.min * MAX_SCORE/100);
+    if(b.lbl==='미성취(환류)') return `미성취(<${Math.round(70*MAX_SCORE/100)}점/<70점)`;
     return `${b.lbl}(${raw}점/${b.min}점)`;
   });
 
@@ -1725,14 +1777,18 @@ function renderCompare(classes){
     }
   });
 
-  // Overlapping histogram
-  const BL40=['0–3','4–7','8–11','12–15','16–19','20–23','24–27','28–31','32–35','36–40'];
+  // Overlapping histogram — dynamic bins based on MAX_SCORE
+  const binSize = MAX_SCORE / 10;
+  const dynBinLabels = Array.from({length:10},(_,i)=>{
+    const lo=Math.round(i*binSize), hi=Math.round((i+1)*binSize);
+    return `${lo}–${hi}`;
+  });
   killChart('chCmpHist');
   S.charts.chCmpHist=new Chart(document.getElementById('chCmpHist'),{
     type:'line',
-    data:{labels:BL40,datasets:classes.map((c,ci)=>{
+    data:{labels:dynBinLabels,datasets:classes.map((c,ci)=>{
       const bins=Array(10).fill(0);
-      c.students.forEach(s=>{bins[Math.min(9,Math.floor(s.total/4))]++;});
+      c.students.forEach(s=>{bins[Math.min(9,Math.floor(s.total/binSize))]++;});
       const col=PAL[ci%PAL.length];
       return{label:c.label,data:bins,borderColor:col.replace('.85','1'),
         backgroundColor:col.replace('.85','.15'),fill:true,tension:.35,pointRadius:3};
@@ -2107,6 +2163,380 @@ function buildAIReport(){
   return html;
 }
 
+
+// ═══════════════════════════════════════════════════════
+// CQI 보고서
+// ═══════════════════════════════════════════════════════
+function generateCQI(){
+  const subject  = document.getElementById('cqi-subject').value  || '(교과목명 미입력)';
+  const dept     = document.getElementById('cqi-dept').value     || '간호학과';
+  const type_    = document.getElementById('cqi-type').value     || '교양필수';
+  const grade    = document.getElementById('cqi-grade').value    || '';
+  const credit   = document.getElementById('cqi-credit').value   || '';
+  const professor= document.getElementById('cqi-professor').value|| '제프리 교수';
+  const semester = document.getElementById('cqi-semester').value || '';
+  const org      = document.getElementById('cqi-org').value      || '청암대학교 간호학과';
+  const po       = document.getElementById('cqi-po').value       || 'PO';
+  const poName   = document.getElementById('cqi-po-name').value  || '';
+  const poLevel  = document.getElementById('cqi-po-level').value || 'L1';
+  const poRatio  = document.getElementById('cqi-po-ratio').value || '100%';
+  const date     = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+
+  const f  = v => v!=null&&!isNaN(v)?v.toFixed(1):'-';
+  const fp = v => v!=null&&!isNaN(v)?v.toFixed(1)+'%':'-';
+  const pct= (v,t)=> t>0?Math.round(v/t*1000)/10:0;
+  const ta = (id,ph,rows=3)=>
+    `<textarea class="cqi-textarea" id="${id}" rows="${rows}" placeholder="${ph}" style="margin-top:4px"></textarea>`;
+  const inp= (id,ph,val='')=>
+    `<input class="cqi-input" id="${id}" placeholder="${ph}" value="${val}" style="width:100%;font-size:11px">`;
+
+  // ── 데이터 수집 ──────────────────────────────────
+  const allSt  = S.f3Total ? S.f3Total.students : (S.f3?.flatMap(c=>c.students)||[]);
+  const scores = allSt.map(s=>s.total);
+  const st     = scores.length ? calcStats(scores) : null;
+  const items  = S.f1?.items.filter(i=>i.cr!=null) || [];
+  const classes= S.f3 || [];
+  const n      = allSt.length;
+  const achieveN   = allSt.filter(s=>s.pct>=70).length;
+  const remedialN  = n - achieveN;
+  const achieveRate= n>0?pct(achieveN,n):0;
+  const highN  = allSt.filter(s=>s.pct>=85).length;
+  const midN   = allSt.filter(s=>s.pct>=70&&s.pct<85).length;
+  const remedialSt = allSt.filter(s=>s.pct<70).sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||a.pct-b.pct);
+
+  // ── 문항 분석 ────────────────────────────────────
+  const avgCr  = items.length?items.reduce((s,i)=>s+i.cr,0)/items.length:null;
+  const discItems = items.filter(i=>i.disc!=null);
+  const avgDisc= discItems.length?discItems.reduce((s,i)=>s+i.disc,0)/discItems.length:null;
+
+  // ═══════════════════════════════════════════════
+  // HTML 생성 시작
+  // ═══════════════════════════════════════════════
+  let html = `<div class="cqi-report" id="cqiReportContent">`;
+
+  // ── 제목 ──
+  html += `<div class="cqi-report-hdr">
+    <div class="cqi-report-title">이론교과목 CQI 보고서</div>
+  </div>`;
+
+  // ── 기본 정보 테이블 ──
+  html += `<table class="cqi-table" style="margin-bottom:20px">
+    <colgroup><col style="width:13%"><col style="width:20%"><col style="width:13%"><col style="width:20%"><col style="width:13%"><col></colgroup>
+    <tbody>
+      <tr><th>교과목명</th><td><strong>${subject}</strong></td><th>대상학과</th><td>${dept}</td><th>이수구분</th><td>${type_}</td></tr>
+      <tr><th>수강학년</th><td>${grade||'-'}</td><th>학점/시수</th><td>${credit||'-'}</td><th>수강인원</th><td>${n?n+'명':'-'}</td></tr>
+      <tr><th>작 성 일</th><td>${date}</td><th>담당교수</th><td colspan="3">${professor} &nbsp;&nbsp;&nbsp;&nbsp; (인)</td></tr>
+    </tbody>
+  </table>`;
+
+  // ══════════════════════════════════════════════
+  //  Ⅰ. 교과목 평가 및 개선에 관한 보고
+  // ══════════════════════════════════════════════
+  html += `<div class="cqi-section-title" style="font-size:14px;text-align:center;letter-spacing:.5px">Ⅰ. 교과목 평가 및 개선에 관한 보고</div>`;
+
+  // ─ 1. PO/CO 성취 결과분석 ─────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">1. 프로그램학습성과(PO)와 교과목 학습성과(CO) 성취 결과분석</div>
+  <table class="cqi-table">
+    <thead>
+      <tr>
+        <th rowspan="3" colspan="3">프로그램 학습성과(PO)</th>
+        <th rowspan="3">교과목<br>학습성과(CO)</th>
+        <th rowspan="3">평가방법</th>
+        <th rowspan="3">평가도구</th>
+        <th rowspan="3">성적<br>반영률(%)</th>
+        <th colspan="3">평가결과(명, %)</th>
+        <th rowspan="3">목표 성취수준<br>'중' 70% 이상</th>
+      </tr>
+      <tr>
+        <th>상<br>(85~100%)</th>
+        <th>중<br>(70~85% 미만)</th>
+        <th>하<br>(70% 미만)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="4" style="font-weight:700;text-align:center">${po}</td>
+        <td rowspan="4" style="text-align:center">●</td>
+        <td rowspan="4" style="text-align:center;font-size:10px">${poLevel}<br>${poRatio}</td>
+        <td rowspan="2" style="text-align:center;font-weight:700">CO1</td>
+        <td>${inp('cqi-co1-m1','예: 보고서')}</td>
+        <td>${inp('cqi-co1-t1','평가도구')}</td>
+        <td style="text-align:center">${inp('cqi-co1-r1','','10')}</td>
+        <td>${inp('cqi-co1-h1','명 (%)')}</td>
+        <td>${inp('cqi-co1-m1r','명 (%)')}</td>
+        <td>${inp('cqi-co1-l1','명 (%)')}</td>
+        <td rowspan="2">${inp('cqi-co1-target','예: 98.7% 달성')}</td>
+      </tr>
+      <tr>
+        <td>${inp('cqi-co1-m2','예: 출석')}</td>
+        <td>${inp('cqi-co1-t2','평가도구')}</td>
+        <td style="text-align:center">${inp('cqi-co1-r2','','10')}</td>
+        <td>${inp('cqi-co1-h2','명 (%)')}</td>
+        <td>${inp('cqi-co1-m2r','명 (%)')}</td>
+        <td>${inp('cqi-co1-l2','명 (%)')}</td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="text-align:center;font-weight:700">CO2</td>
+        <td>${inp('cqi-co2-m1','예: 지필고사(중간)')}</td>
+        <td>${inp('cqi-co2-t1','평가도구')}</td>
+        <td style="text-align:center">${inp('cqi-co2-r1','','40')}</td>
+        <td style="font-size:10px">${n?highN+'명<br>('+pct(highN,n).toFixed(1)+'%)':inp('cqi-co2-h1','명 (%)')}</td>
+        <td style="font-size:10px">${n?midN+'명<br>('+pct(midN,n).toFixed(1)+'%)':inp('cqi-co2-m1r','명 (%)')}</td>
+        <td style="font-size:10px">${n?remedialN+'명<br>('+pct(remedialN,n).toFixed(1)+'%)':inp('cqi-co2-l1','명 (%)')}</td>
+        <td rowspan="2" style="font-size:10px">${n?'<strong>'+fp(achieveRate)+'</strong><br>달성':inp('cqi-co2-target','예: 72.2% 달성')}</td>
+      </tr>
+      <tr>
+        <td>${inp('cqi-co2-m2','예: 지필고사(기말)')}</td>
+        <td>${inp('cqi-co2-t2','평가도구')}</td>
+        <td style="text-align:center">${inp('cqi-co2-r2','','40')}</td>
+        <td>${inp('cqi-co2-h2','명 (%)')}</td>
+        <td>${inp('cqi-co2-m2r','명 (%)')}</td>
+        <td>${inp('cqi-co2-l2','명 (%)')}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:10px;padding:10px;background:#f8fafc;border-radius:6px;font-size:11px;color:var(--muted)">
+    ▶ 결과 분석
+    ${ta('cqi-result-analysis','결과 분석 내용을 입력하세요.\n예:\n• 본 교과목의 프로그램 학습성과별 달성목표: 전체 수강생의 70%이상이 \'중\'이상 달성.\n• CO1을 보고서, 출석으로 평가하였으며, 수강생의 98.7% 목표 달성함.\n• CO2를 지필고사(중간고사, 기말고사)로 평가하였으며, 수강생의 72.2% 목표 달성함.',4)}
+  </div>
+  <div style="margin-top:8px">
+    ▶ 학습성과와 교과목의 연계성
+    <table class="cqi-table" style="margin-top:6px"><tbody>
+      <tr>
+        <td style="width:10%;font-weight:700;text-align:center">${po}</td>
+        <td style="width:5%;text-align:center">●</td>
+        <td style="width:8%;text-align:center">${poLevel}</td>
+        <td style="width:8%;text-align:center">${poRatio}</td>
+        <td>${inp('cqi-po-link','예: 전년도 학습성과와 교과목 연계성 변경 없음')}</td>
+      </tr>
+    </tbody></table>
+  </div></div>`;
+
+  // ─ 2. 학습성과 미달성자 지도내용 ──────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">2. 학습성과 미달성자에 대한 지도내용</div>
+  <table class="cqi-table">
+    <thead><tr><th style="width:8%">PO</th><th style="width:8%">CO</th><th>미달성자 지도내용</th></tr></thead>
+    <tbody>
+      <tr>
+        <td rowspan="2" style="font-weight:700;text-align:center">${po.replace('PO','')}</td>
+        <td style="text-align:center">1</td>
+        <td>${ta('cqi-guidance1','CO1 미달성자 지도내용 입력\n예:\n• 보고서 미제출자는 보고서 제출\n• 출석 미달자는 지도교수 상담 의뢰',2)}</td>
+      </tr>
+      <tr>
+        <td style="text-align:center">2</td>
+        <td>${ta('cqi-guidance2','CO2 미달성자 지도내용 입력\n예: • 중간고사와 기말고사 정답률 분석결과를 반영한 재시험(온라인 또는 오프라인)',2)}</td>
+      </tr>
+    </tbody>
+  </table></div>`;
+
+  // ─ 3. 진단·형성평가 운영 결과 ────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">3. 이번 학기 진단평가·형성평가 운영 결과</div>
+  <table class="cqi-table">
+    <thead><tr><th style="width:12%">구분</th><th>운영방법</th><th>분석 및 활용</th></tr></thead>
+    <tbody>
+      <tr><td style="font-weight:700;text-align:center">진단평가</td>
+        <td>${ta('cqi-diag-method','진단평가 운영방법 입력\n예: 구글 설문지를 활용한 온라인 평가로 사전지식 수준을 확인하기 위하여 1주차 수업 전 실시함.',2)}</td>
+        <td>${ta('cqi-diag-result','분석 및 활용 입력\n예: 정보 리터러시 역량을 사전 진단하여 수업 개선에 활용함.',2)}</td></tr>
+      <tr><td style="font-weight:700;text-align:center">형성평가</td>
+        <td>${ta('cqi-form-method','형성평가 운영방법 입력\n예: 구글 설문지를 활용한 온라인 평가를 2,3,4,5,6,7주차의 학습내용으로 구성하여 리뷰퀴즈를 실시함.',2)}</td>
+        <td>${ta('cqi-form-result','분석 및 활용 입력\n예: 오답률이 높은 문항을 분석하여 재학습할 수 있도록 질의응답 및 토론을 하였음.',2)}</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:11px;color:var(--muted)">▶ 운영평가 및 개선
+    ${ta('cqi-eval-improve','운영평가 및 개선 내용 입력\n예:\n• 사전 진단평가를 통해 학습자들의 수준과 요구도를 평가하여 수업운영 계획에 반영할 수 있었음.\n• 수업시작 전 형성평가(리뷰퀴즈) 실시 및 실시간 답변 현황 모니터링을 통해 즉각적인 피드백을 실시하였음.',3)}
+  </div></div>`;
+
+  // ─ 4. 문항분석 ──────────────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">4. 문항분석</div>
+  <table class="cqi-table">
+    <thead><tr><th style="width:10%">분석내용</th><th style="width:14%">평가방법</th><th style="width:20%">문항분석표</th><th>문항분석 결과 및 개선</th></tr></thead>
+    <tbody>
+      <tr>
+        <td rowspan="2" style="font-weight:700;text-align:center;vertical-align:middle">문항<br>변별도<br>및<br>난이도</td>
+        <td style="text-align:center">지필고사<br>(중간고사)</td>
+        <td style="text-align:center;color:var(--muted);font-size:10px">${items.length?`${items.length}문항 / ${MAX_SCORE}점 만점<br>파일1 데이터 기반`:'파일1 업로드 시 자동 분석'}</td>
+        <td>
+          ${items.length?`• 객관식 전체 문항수 / 배점 : <strong>${items.length}문항 / ${MAX_SCORE}점</strong><br>
+          ${avgDisc!=null?`• 문항의 평균 변별도는 <strong>${avgDisc.toFixed(2)}</strong>로 ${avgDisc>=0.3?'학업 성취도를 변별하는 데 있어 적절하다고 판단됨':'변별도 개선이 필요한 문항이 있음'}.<br>`:''}
+          ${avgCr!=null?`• 평균 난이도는 <strong>${(avgCr*100).toFixed(2)}</strong>으로, ${avgCr>=0.6?'전반적으로 적정 수준으로 평가할 수 있음':'다소 어려운 수준으로 개선이 필요함'}.`:''}
+          <div style="margin-top:4px">`:'<div>'}
+          ${ta('cqi-item-mid','추가 분석 내용 또는 기말고사 분석 내용을 입력하세요.\n예:\n• 객관식 전체 문항수 / 배점 : 40문항 / 40점\n• 문항의 평균 변별도는 0.36으로 적절하다고 판단됨.\n• 평균 난이도는 0.71으로 적정 수준으로 평가할 수 있음.',3)}
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align:center">지필고사<br>(기말고사)</td>
+        <td style="text-align:center;color:var(--muted);font-size:10px">별도 파일 분석 결과 입력</td>
+        <td>${ta('cqi-item-fin','기말고사 문항분석 결과 및 개선 내용 입력\n예:\n• 객관식 전체 문항수 / 배점 : 40문항 / 40점\n• 문항의 평균 변별도는 0.37로 적정 수준의 변별력을 갖추고 있음.\n• 평균 난이도는 0.63으로, 적정 수준에 있음.\n• 적절한 수준의 중간 난이도를 유지하고 있음.',4)}</td>
+      </tr>
+    </tbody>
+  </table></div>`;
+
+  // ─ 5. 강의 평가 결과 ─────────────────────────
+  const classLabels = classes.length ? classes.map(c=>c.label) : ['A반','B반','C반','D반','E반','F반'];
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">5. 강의 평가 결과</div>
+  <table class="cqi-table">
+    <thead><tr><th>구분</th>${classLabels.map(l=>`<th>${l}</th>`).join('')}</tr></thead>
+    <tbody>
+      <tr><td>평가점수(5점 척도)</td>${classLabels.map((_,i)=>`<td>${inp('cqi-eval-s'+i,'점수')}</td>`).join('')}</tr>
+      <tr><td>참여 인원(명)</td>${classLabels.map((l,i)=>{
+        const cls=classes.find(c=>c.label===l);
+        return `<td>${inp('cqi-eval-p'+i,'인원',cls?cls.students.length:'')}</td>`;
+      }).join('')}</tr>
+    </tbody>
+  </table>
+  ${ta('cqi-eval-desc','강의평가 결과 총평 입력\n예:\n• 강의평가 점수는 전체 평균 4.7점으로 10개의 평가항목에 대해 최저 4.1점에서 최고 4.9점으로 전반적으로 모든 평가항목에서 높은 점수를 받았음.\n• 컴퓨터활용능력 및 정보능력 향상과 구글 워크스페이스 및 생성AI의 교육적 활용법에 대해 유익했다는 의견이 많았음.',3)}
+  </div>`;
+
+  // ─ 6. 교과목 개선사항 반영 결과 ─────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">6. 교과목 개선 사항 반영 결과</div>
+  <table class="cqi-table">
+    <thead><tr><th>전년도 개선사항</th><th>금년도 개선내용</th></tr></thead>
+    <tbody><tr>
+      <td>${ta('cqi-prev-improve','전년도 개선사항 입력\n예:\n• 해당 교과목을 이해하는데 도움이 될 수 있는 과제물을 부여하였다.\n• 구글 스프레드시트 실습을 위주로 수업을 진행하였으나, 소수의 학생들이 여전히 실습시간 부족에 대한 어려움을 호소하고 있는 것으로 나타났다.',3)}</td>
+      <td>${ta('cqi-curr-improve','금년도 개선내용 입력\n예:\n• 생성AI 및 스프레드시트 실습 시간을 충분하게 보장하여 학생들의 만족도가 향상 되었음.\n• 적절한 양의 과제 부여로 학생들의 만족도가 향상 되었음.',3)}</td>
+    </tr></tbody>
+  </table></div>`;
+
+  // ─ 7. 총평 ──────────────────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">7. 총평</div>
+  <div style="background:#f8fafc;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+    <div>
+      <div style="font-weight:700;font-size:11px;margin-bottom:3px">① 학습성과 평가 결과</div>
+      ${ta('cqi-summary1','예:\n• '+po+'('+poName+') 달성을 위해 CO1~CO2를 연계하여 수업을 운영함.\n• 중간·기말 지필고사, 보고서, 출석 모두에서 목표 성취수준(70% 이상)을 달성함.',2)}
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:11px;margin-bottom:3px">② 강의평가 결과</div>
+      ${ta('cqi-summary2','예: • 전체 평균 4.70/5점으로 대체적으로 만족함.',2)}
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:11px;margin-bottom:3px">③ 교과목 개선사항 반영 결과</div>
+      ${ta('cqi-summary3','교과목 개선사항 반영 결과 입력',2)}
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:11px;margin-bottom:3px">④ 진단평가·형성평가 반영결과</div>
+      ${ta('cqi-summary4','예:\n• 진단평가 반영결과: 생성AI 활용 실태 및 요구도를 분석하여 수업에 반영함.\n• 형성평가 반영결과: 매주차 플립러닝 동영상 시청 후 구두발표 및 토론, 질의응답으로 학습효과가 향상되었음.',3)}
+    </div>
+  </div></div>`;
+
+  // ─ 8. 다음학기 지도 계획 ─────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">8. 다음학기 지도 계획</div>
+  ${ta('cqi-next-plan','다음학기 지도 계획 입력\n예:\n• 2차 강의평가 결과 유익했던 점과 개선해야 할 점을 요약하면 다음과 같이 나타남.\n<유익했던 점>\n- 열정적인 수업 운영에 대해 높이 평가함.\n- 구글 워크스페이스 및 생성AI의 교육적 활용 방법에 대한 만족도가 높게 나타남.\n<개선해야 할 점>\n- 충분한 실습시간 확보.',5)}
+  </div>`;
+
+  // ══════════════════════════════════════════════
+  //  Ⅱ. 학습성과 미달성자 학습지도 결과 보고
+  // ══════════════════════════════════════════════
+  html += `<div class="cqi-section-title" style="font-size:14px;text-align:center;letter-spacing:.5px;margin-top:24px">Ⅱ. 학습성과 미달성자 학습지도 결과 보고</div>`;
+
+  // ─ II-1. 미달성자 현황 ───────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">1. 프로그램 학습성과 미달성자(성취수준 '하' 이하)</div>
+  <table class="cqi-table">
+    <thead><tr><th style="width:8%">PO</th><th style="width:8%">CO</th><th style="width:16%">평가방법</th><th>미달성자 인원 및 명단</th></tr></thead>
+    <tbody>
+      <tr>
+        <td rowspan="2" style="font-weight:700;text-align:center">${po.replace('PO','')}</td>
+        <td style="text-align:center">1</td>
+        <td style="text-align:center">보고서, 출석</td>
+        <td>${ta('cqi-fail-co1','CO1 미달성자 인원 및 명단 입력\n예: • 인원: 5명\n• 명단: 홍길동(2511101), ...',2)}</td>
+      </tr>
+      <tr>
+        <td style="text-align:center">2</td>
+        <td style="text-align:center">지필고사<br>(중간, 기말)</td>
+        <td>
+          ${remedialSt.length?`• 인원: <strong>${remedialSt.length}명</strong><br>• 명단:
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px">
+            ${remedialSt.map(s=>`<div style="background:#fee2e2;border-radius:4px;padding:2px 5px;font-size:9px">${s.cls?s.cls+' ':''}<strong>${s.name||''}</strong><br><span style="color:var(--muted)">${s.id||''}</span></div>`).join('')}
+          </div>`:ta('cqi-fail-co2','CO2 미달성자 인원 및 명단 입력\n예: • 인원: 48명\n• 명단: (학번, 이름 목록)',3)}
+        </td>
+      </tr>
+    </tbody>
+  </table></div>`;
+
+  // ─ II-2. 학습지도 내용 ──────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">2. 학습성과 미달성자(성취수준 '하' 이하) 학습지도 내용</div>
+  <table class="cqi-table"><tbody>
+    <tr>
+      <td rowspan="2" style="font-weight:700;text-align:center;width:10%">${po}</td>
+      <td style="font-weight:700;width:8%;vertical-align:top">CO1</td>
+      <td>
+        <div style="font-weight:700;font-size:11px;margin-bottom:3px">▸ 시행일시:</div>
+        ${ta('cqi-guide-co1','CO1 학습지도 내용 입력\n예:\n• 보고서 미제출자는 보고서 제출\n• 출석 미달자는 지도교수 상담 의뢰',2)}
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;vertical-align:top">CO2</td>
+      <td>
+        <div style="font-weight:700;font-size:11px;margin-bottom:3px">▸ 시행일시:</div>
+        ${inp('cqi-guide-date','예: 2025년 6월 19일(월요일) 09:20~11:10')}
+        <div style="margin-top:6px">
+          ${ta('cqi-guide-co2','CO2 학습지도 내용 입력\n예:\n• 강의계획서에 명시된 16주차 환류교육 운영 계획에 따라 시행함.\n• 방법: 지필고사 문항분석 후 재평가\n• 내용: 프로그램 학습성과 미도달자 환류교육을 위하여 구글 클래스룸과 Email을 통하여 일정 및 내용을 사전에 공지하였으며, 지필고사 문항분석과 재평가를 실시함.',4)}
+        </div>
+      </td>
+    </tr>
+  </tbody></table></div>`;
+
+  // ─ II-3. 증빙자료 ───────────────────────────
+  html += `<div class="cqi-section">
+  <div class="cqi-sec-num">3. 학습성과 미달성자 학습지도 증빙자료(붙임자료)</div>
+  ${ta('cqi-evidence','증빙자료 목록 입력\n예:\n• [붙임자료 1] 환류교육 평가지 상, 중 각 1부',2)}
+  </div>`;
+
+  // ── 안내 ──
+  html += `<div style="margin-top:16px;padding:10px 14px;background:#f1f5f9;border-radius:8px;font-size:10px;color:var(--muted);text-align:center">
+    본 CQI 보고서는 업로드된 데이터를 기반으로 자동 생성되었습니다. 각 항목을 작성 완료 후 PDF로 저장하세요.
+  </div>`;
+
+  html += `</div>`;
+
+  document.getElementById('cqiReport').innerHTML = html;
+  document.getElementById('cqiExpBar').style.display = 'flex';
+  toast('✅ CQI 보고서 생성 완료');
+}
+
+async function exportCQIPDF(){
+  const content = document.getElementById('cqiReportContent');
+  if(!content){ toast('❌ 먼저 CQI 보고서를 생성하세요'); return; }
+  toast('PDF 생성 중…');
+  try{
+    const { jsPDF } = window.jspdf;
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:fixed;left:-9999px;top:0;width:900px;background:#fff;padding:0;z-index:-1;font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+    wrapper.innerHTML = content.outerHTML;
+    document.body.appendChild(wrapper);
+    await new Promise(r=>setTimeout(r,150));
+    const canvas = await html2canvas(wrapper,{scale:2,useCORS:true,backgroundColor:'#fff',logging:false,width:900,scrollY:0});
+    document.body.removeChild(wrapper);
+    const pdf = new jsPDF('p','mm','a4');
+    const pdfW=210,pdfH=297,margin=8,avW=pdfW-margin*2,avH=pdfH-margin*2;
+    const pxPerMm = canvas.width/avW;
+    let yOff=0,remPx=canvas.height,page=1;
+    while(remPx>0){
+      if(page>1) pdf.addPage();
+      const sliceHpx=Math.min(remPx,avH*pxPerMm);
+      const sc=document.createElement('canvas');
+      sc.width=canvas.width; sc.height=sliceHpx;
+      sc.getContext('2d').drawImage(canvas,0,yOff,canvas.width,sliceHpx,0,0,canvas.width,sliceHpx);
+      pdf.addImage(sc.toDataURL('image/jpeg',.95),'JPEG',margin,margin,avW,sliceHpx/pxPerMm);
+      yOff+=sliceHpx; remPx-=sliceHpx; page++;
+    }
+    const subject = document.getElementById('cqi-subject')?.value || '교과목';
+    pdf.save(`CQI보고서_${subject}_${new Date().toISOString().slice(0,10)}.pdf`);
+    toast(`✅ CQI PDF 저장 완료 (${page}페이지)`);
+  }catch(e){ toast('❌ PDF 생성 실패: '+e.message); console.error(e); }
+}
+
+
 function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
@@ -2149,6 +2579,7 @@ const TAB_INFO = {
   'tp-disc':    {title:'문항 변별도',       file:'문항변별도'},
   'tp-compare': {title:'반별 분석',         file:'반별분석'},
   'tp-rank':    {title:'성적 현황',         file:'성적현황'},
+  'tp-cqi':     {title:'CQI 보고서',        file:'CQI보고서'},
 };
 
 function showPdfLoading(status, sub){
@@ -2316,7 +2747,53 @@ function sortTbl(id,col){
 }
 </script>
 
+
+
 <!-- FOOTER -->
+
+  <!-- ⑦ CQI 보고서 -->
+  <div class="tab-pane" id="tp-cqi">
+    <span class="src-bdg" style="background:#dbeafe;color:#1d4ed8">📑 CQI 보고서 · 교과목 학습성과 지속적 질 개선</span>
+
+    <!-- 교과목 정보 입력 -->
+    <div class="cqi-info-bar">
+      <label>교과목명</label><input class="cqi-input" id="cqi-subject" placeholder="예: 성인간호학">
+      <label>대상학과</label><input class="cqi-input" id="cqi-dept" value="간호학과">
+      <label>이수구분</label>
+      <select class="cqi-select" id="cqi-type">
+        <option>교양필수</option><option>교양선택</option><option>전공필수</option><option>전공선택</option>
+      </select>
+      <label>수강학년</label><input class="cqi-input" id="cqi-grade" placeholder="예: 1학년">
+    </div>
+    <div class="cqi-info-bar" style="margin-top:0">
+      <label>학점/시수</label><input class="cqi-input" id="cqi-credit" placeholder="예: 2학점/2시수">
+      <label>담당교수</label><input class="cqi-input" id="cqi-professor" value="제프리 교수">
+      <label>학년/학기</label><input class="cqi-input" id="cqi-semester" placeholder="예: 2025-1">
+      <label>소속기관</label><input class="cqi-input" id="cqi-org" value="청암대학교 간호학과">
+    </div>
+    <div class="cqi-info-bar" style="margin-top:0">
+      <label>프로그램학습성과(PO)</label><input class="cqi-input" id="cqi-po" placeholder="예: PO7">
+      <label>학습성과명</label><input class="cqi-input" id="cqi-po-name" placeholder="예: 정보통신과 보건의료기술">
+      <label>연계수준</label><input class="cqi-input" id="cqi-po-level" placeholder="예: L1">
+      <label>반영비율</label><input class="cqi-input" id="cqi-po-ratio" placeholder="예: 100%">
+    </div>
+
+    <button class="cqi-gen-btn" onclick="generateCQI()">📑 CQI 보고서 자동 생성</button>
+
+    <!-- 보고서 출력 영역 -->
+    <div id="cqiReport">
+      <div class="cqi-no-data">
+        <span style="font-size:32px;display:block;margin-bottom:10px">📑</span>
+        교과목 정보를 입력하고 <strong>CQI 보고서 자동 생성</strong> 버튼을 클릭하세요.<br>
+        <small style="color:var(--muted)">파일1·2·3 데이터를 기반으로 자동 분석됩니다.</small>
+      </div>
+    </div>
+
+    <div class="cqi-exp-bar" id="cqiExpBar" style="display:none">
+      <button class="pdf-all-btn" onclick="exportCQIPDF()">📄 CQI 보고서 PDF 저장</button>
+    </div>
+  </div>
+
 <!-- AI 분석 모달 -->
 <div class="ai-overlay" id="aiOverlay" onclick="if(event.target===this)closeAIModal()">
   <div class="ai-box">
