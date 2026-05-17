@@ -165,7 +165,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
           <tr><td>🤖 AI 분석</td><td>업로드된 데이터를 기반으로 종합 분석 보고서 자동 생성 (PDF 저장 가능)</td></tr>
           <tr>
             <td>
-              <span class="btn-preview btn-red">🔄 초기화</span>
+              <span class="btn-preview" style="background:#2563eb;color:#fff;border:1px solid #1d4ed8;padding:5px 14px;border-radius:7px;font-size:12px;font-weight:700">🔄 초기화</span>
             </td>
             <td><strong>페이지를 완전히 새로고침</strong>하여 모든 상태(업로드 파일, 분석 결과, CQI 입력 내용)를 초기 상태로 되돌림.<br>
             <strong style="color:#dc2626">주의: 모든 분석 결과와 CQI 보고서 입력 내용이 사라집니다. PDF·CSV로 저장 후 초기화하세요.</strong></td>
@@ -317,9 +317,10 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
           <tr><td><span class="btn-preview btn-green">📄 전체 분석 PDF 저장</span></td><td>모든 분석 탭의 결과를 하나의 PDF로 저장 (데이터 있는 탭만 포함)</td></tr>
           <tr><td><span class="btn-preview btn-green" style="background:#059669">📄 현재 탭 PDF 저장</span></td><td>현재 화면에 보이는 탭만 PDF로 저장 (CQI 탭 포함)</td></tr>
           <tr><td>탭 내 PDF 버튼</td><td>해당 섹션(차트 포함)만 개별 PDF로 저장</td></tr>
-          <tr><td><span class="btn-preview btn-green">📄 CQI 보고서 PDF 저장</span></td><td>CQI 탭에서 생성된 8섹션 보고서를 PDF로 저장</td></tr>
+          <tr><td><span class="btn-preview btn-green">📄 CQI 보고서 PDF 저장</span></td><td>CQI 탭에서 생성된 8섹션 보고서를 PDF로 저장. ⑥⑦⑧ 입력 내용도 포함됨.</td></tr>
           <tr><td>AI 분석 모달 내 PDF</td><td>AI 분석 결과를 PDF로 저장</td></tr>
         </table>
+        <div class="man-tip">💡 <strong>CQI 보고서 PDF 저장</strong> 시 ⑥ 문제점·⑦ 환류 교육 계획·⑧ 개선 목표에 직접 입력한 내용이 그대로 PDF에 출력됩니다. 긴 내용도 잘리지 않고 전체가 출력됩니다.</div>
 
         <div class="man-h2">📊 CSV 내보내기 종류</div>
         <ul class="man-ul">
@@ -392,7 +393,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
         <div class="man-step"><div class="man-step-num">3</div><div class="man-step-txt"><strong>CQI 보고서 자동 생성</strong> 버튼 클릭 → 8개 섹션 자동 작성</div></div>
         <div class="man-step"><div class="man-step-num">4</div><div class="man-step-txt">⑥ 문제점 및 개선 과제, ⑦ 환류 교육 계획, ⑧ 개선 목표 섹션에 내용 직접 입력</div></div>
         <div class="man-step"><div class="man-step-num">5</div><div class="man-step-txt"><strong>📄 CQI 보고서 PDF 저장</strong> 버튼으로 PDF 저장</div></div>
-        <div class="man-warn">⚠️ <strong>초기화(<span style="color:#dc2626">🔄</span>) 버튼은 페이지를 완전히 새로고침합니다.</strong> CQI 보고서 입력 내용이 모두 사라지므로, 반드시 PDF로 저장한 후 초기화하세요.</div>
+        <div class="man-warn">⚠️ <strong>초기화(<span style="color:#2563eb">🔄</span>) 버튼은 페이지를 완전히 새로고침합니다.</strong> CQI 보고서 입력 내용이 모두 사라지므로, 반드시 PDF로 저장한 후 초기화하세요.</div>
 
         <div class="man-h2">📑 CQI 보고서 8개 섹션 구성</div>
         <table class="man-table">
@@ -496,7 +497,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
 
 <footer class="site-footer">
   <div class="footer-info">
-    <div class="footer-org">청암대학교 간호학과 / 제프리 교수 (imjp5678@scjc.ac.kr)</div>
+    <div class="footer-org">청암대학교 간호학과 / 제프리 교수 / imjp5678@scjc.ac.kr</div>
     <div class="footer-note">본 플랫폼에서 생성된 자료는 참고용으로만 활용하시기 바랍니다.</div>
   </div>
 </footer>
