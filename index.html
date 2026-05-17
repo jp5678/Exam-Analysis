@@ -2398,7 +2398,7 @@ async function exportCQIPDF(){
     // ══════════════════════════════════════════════════════════════
 
     // ① textarea → 높이 자동확장 div 로 임시 교체 (원본 DOM에서)
-    //    height:auto + overflow:visible 로 내용 전체 출력 보장
+    //    div 참조를 backup에 저장 → 복원 시 replaceChild(ta, div) 로 div 제거
     const taBackups = [];
     content.querySelectorAll('textarea').forEach(ta => {
       const val = ta.value || '';
@@ -2410,8 +2410,8 @@ async function exportCQIPDF(){
         'background:#fff;font-family:inherit;box-sizing:border-box;' +
         (val ? 'color:#1e293b' : 'color:#94a3b8');
       div.textContent = val || ta.placeholder || '';
-      taBackups.push({ta, parent: ta.parentNode, sibling: ta.nextSibling});
-      ta.parentNode.replaceChild(div, ta);
+      taBackups.push({ta, div, parent: ta.parentNode}); // div 참조 저장
+      ta.parentNode.replaceChild(div, ta);              // ta 제거, div 삽입
     });
 
     // ② input value → attribute 반영 (원본 DOM에서)
@@ -2422,7 +2422,6 @@ async function exportCQIPDF(){
     });
 
     // ③ 수정된 원본을 클론 (div·attribute 완전 반영 상태)
-    //    position:absolute + 대형 음수 left → 뷰포트 클리핑 없이 전체 렌더링
     const wrapper = document.createElement('div');
     wrapper.style.cssText =
       'position:absolute;left:-9999px;top:0;width:900px;height:auto;overflow:visible;' +
@@ -2430,10 +2429,10 @@ async function exportCQIPDF(){
       'font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif';
     wrapper.appendChild(content.cloneNode(true));
 
-    // ④ 원본 즉시 복원
-    taBackups.forEach(({ta, parent, sibling}) => {
-      if(sibling && sibling.parentNode === parent) parent.insertBefore(ta, sibling);
-      else parent.appendChild(ta);
+    // ④ 원본 즉시 복원 — replaceChild(ta, div) 로 div를 제거하면서 ta를 복원
+    //    insertBefore 방식은 div가 그대로 남아 내용이 두 번 보이는 문제 발생
+    taBackups.forEach(({ta, div, parent}) => {
+      parent.replaceChild(ta, div); // div 제거 + ta 복원 (동시에)
     });
     inpBackups.forEach(({inp, prev}) => {
       if(prev === null) inp.removeAttribute('value');
