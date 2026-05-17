@@ -372,18 +372,23 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
           </div>
         </div>
 
-        <div class="man-h2">📝 입력 정보 (4가지)</div>
+        <div class="man-h2">📝 입력 정보 (2행 8가지)</div>
         <table class="man-table">
-          <tr><th style="width:26%">항목</th><th>설명</th></tr>
-          <tr><td>교과목명</td><td>분석 대상 교과목명 입력 (예: 성인간호학)</td></tr>
-          <tr><td>학년/학기</td><td>해당 학년도 및 학기 입력 (예: 2025-1)</td></tr>
-          <tr><td>담당교수</td><td>기본값: 제프리 교수 (변경 가능)</td></tr>
-          <tr><td>학과</td><td>기본값: 청암대학교 간호학과 (변경 가능)</td></tr>
+          <tr><th style="width:10%">행</th><th style="width:24%">항목</th><th style="width:20%">입력 방식</th><th>설명</th></tr>
+          <tr><td rowspan="4" style="text-align:center;font-weight:700">1행</td><td>교과목명</td><td><span style="color:#059669;font-weight:700">🔵 자동 입력</span></td><td>파일1(문항분석표)의 <strong>응시과목</strong> 셀에서 자동 탐지. 직접 수정 가능.</td></tr>
+          <tr><td>대상학과</td><td>직접 입력</td><td>기본값: 간호학과</td></tr>
+          <tr><td>이수구분</td><td>드롭다운 선택</td><td>전공필수 / 전공선택 / 교양필수 / 교양선택</td></tr>
+          <tr><td>수강학년</td><td>드롭다운 선택</td><td>1학년 / 2학년 / 3학년 / 4학년 / 전공심화과정</td></tr>
+          <tr><td rowspan="4" style="text-align:center;font-weight:700">2행</td><td>학점/시수</td><td>직접 입력</td><td>예: 2학점/2시수</td></tr>
+          <tr><td>수강인원</td><td><span style="color:#059669;font-weight:700">🔵 자동 입력</span></td><td>파일3(종합성적현황)의 학생 수를 분석 완료 시 자동 반영</td></tr>
+          <tr><td>작성일</td><td><span style="color:#059669;font-weight:700">📅 캘린더 선택</span></td><td>오늘 날짜 자동 입력. 캘린더 아이콘 클릭으로 날짜 변경 가능.</td></tr>
+          <tr><td>담당교수</td><td>직접 입력</td><td>기본값: 제프리 교수</td></tr>
         </table>
+        <div class="man-tip">💡 <strong>파란색 배경 항목</strong>(교과목명·수강인원)은 업로드한 파일에서 자동 입력됩니다. 내용을 직접 수정할 수 있습니다.</div>
 
         <div class="man-h2">📑 CQI 보고서 생성 순서</div>
-        <div class="man-step"><div class="man-step-num">1</div><div class="man-step-txt"><strong>파일 업로드 후 성적 분석 시작</strong> 버튼 클릭 → CQI 탭에 입력 양식이 나타남</div></div>
-        <div class="man-step"><div class="man-step-num">2</div><div class="man-step-txt"><strong>CQI 보고서 탭</strong> 클릭 후 교과목명, 학년/학기 입력</div></div>
+        <div class="man-step"><div class="man-step-num">1</div><div class="man-step-txt"><strong>파일 업로드 후 성적 분석 시작</strong> 버튼 클릭 → CQI 탭에 입력 양식 표시, 교과목명·수강인원·작성일 자동 입력</div></div>
+        <div class="man-step"><div class="man-step-num">2</div><div class="man-step-txt"><strong>CQI 보고서 탭</strong> 클릭 → 이수구분·수강학년 드롭다운 선택, 학점/시수·담당교수 확인/수정</div></div>
         <div class="man-step"><div class="man-step-num">3</div><div class="man-step-txt"><strong>CQI 보고서 자동 생성</strong> 버튼 클릭 → 8개 섹션 자동 작성</div></div>
         <div class="man-step"><div class="man-step-num">4</div><div class="man-step-txt">⑥ 문제점 및 개선 과제, ⑦ 환류 교육 계획, ⑧ 개선 목표 섹션에 내용 직접 입력</div></div>
         <div class="man-step"><div class="man-step-num">5</div><div class="man-step-txt"><strong>📄 CQI 보고서 PDF 저장</strong> 버튼으로 PDF 저장</div></div>
@@ -392,7 +397,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
         <div class="man-h2">📑 CQI 보고서 8개 섹션 구성</div>
         <table class="man-table">
           <tr><th style="width:8%">섹션</th><th style="width:30%">제목</th><th>내용</th><th style="width:16%">데이터 소스</th></tr>
-          <tr><td style="text-align:center">①</td><td>교과목 기본 정보</td><td>교과목명, 담당교수, 학과, 수강인원, 성취기준점</td><td><span style="color:#059669;font-weight:700">자동</span> (입력값 + 파일3)</td></tr>
+          <tr><td style="text-align:center">①</td><td>교과목 기본 정보</td><td>교과목명·대상학과·이수구분·수강학년·학점/시수·수강인원·작성일·담당교수·성취기준점</td><td><span style="color:#059669;font-weight:700">자동</span> (입력값 + 파일3)</td></tr>
           <tr><td style="text-align:center">②</td><td>학습성과 달성 현황</td><td>평균, 성취율, 미성취 인원, 최고/최저/중앙값/표준편차</td><td><span style="color:#059669;font-weight:700">자동</span> (파일3)</td></tr>
           <tr><td style="text-align:center">③</td><td>성취수준 분포</td><td>A+~미성취(환류) 7등급별 인원·비율 표</td><td><span style="color:#059669;font-weight:700">자동</span> (파일3)</td></tr>
           <tr><td style="text-align:center">④</td><td>문항별 성취 분석</td><td>난이도 분포, 정답률 하위 5문항, 변별도 경고</td><td><span style="color:#059669;font-weight:700">자동</span> (파일1)</td></tr>

@@ -203,6 +203,9 @@ tr:hover td{background:#f8fafc}
 .cqi-info-bar label{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
 .cqi-input{padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;width:100%;font-family:inherit}
 .cqi-input:focus{outline:none;border-color:var(--p1)}
+input[type="date"].cqi-input{cursor:pointer;color:var(--txt)}
+input[type="date"].cqi-input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.7}
+input[type="date"].cqi-input::-webkit-calendar-picker-indicator:hover{opacity:1}
 .cqi-gen-btn{width:100%;padding:12px;background:linear-gradient(-45deg,#4285F4,#9C27B0,#00BCD4,#7C4DFF,#E91E63,#4285F4);background-size:400% 400%;animation:geminiShift 5s ease infinite;color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;transition:transform .2s,box-shadow .2s}
 .cqi-gen-btn:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(124,77,255,.6)}
 .cqi-report{background:#fff;border-radius:var(--r);padding:28px 32px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
@@ -622,12 +625,35 @@ function loadFile(inp, slot) {
       document.getElementById(`fn${slot}`).textContent  = f.name;
       document.getElementById(`drop${slot}`).className  = `up-card ok${slot+1}`;
       if(S.raw.some(r=>r)) document.getElementById('runBtn').classList.add('show');
-      // 파일1 업로드 시: 문항 수 자동 감지 → 만점 입력창 업데이트
+      // 파일1 업로드 시: 문항 수 자동 감지 + 응시과목 탐지
       if(slot===0 && S.raw[0]?.rows?.length) {
         const detectedN = S.raw[0].rows.length;
         MAX_SCORE = detectedN;
         PASS_RAW  = Math.round(MAX_SCORE * 0.7);
         updateDynamicLabels();
+        // 건너뛴 1~5행에서 응시과목 탐지
+        try {
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const ref   = sheet['!ref'] || 'A1';
+          const range = XLSX.utils.decode_range(ref);
+          const subjectPat = /응시과목|교과목명|과목명|subject/i;
+          let foundSubject = null;
+          outer: for(let r = 0; r <= Math.min(SKIP_ROWS[0]-1, range.e.r); r++){
+            for(let c = range.s.c; c <= range.e.c; c++){
+              const cell = sheet[XLSX.utils.encode_cell({r, c})];
+              if(cell && subjectPat.test(String(cell.v||''))){
+                // 같은 행 오른쪽 셀 또는 다음 행 같은 열에서 값 탐색
+                const next = sheet[XLSX.utils.encode_cell({r, c:c+1})]
+                          || sheet[XLSX.utils.encode_cell({r:r+1, c})];
+                if(next && String(next.v||'').trim()){
+                  foundSubject = String(next.v).trim();
+                  break outer;
+                }
+              }
+            }
+          }
+          S.raw[0]._subject = foundSubject;
+        } catch(_){}
       }
       toast(`✅ ${f.name} 업로드 완료`);
     } catch(ex){ toast('❌ '+ex.message); }
@@ -1025,6 +1051,18 @@ function runAnalysis(){
       // CQI 폼 표시 (분석 완료 후)
       document.getElementById('cqiInitMsg').style.display='none';
       document.getElementById('cqiFormArea').style.display='block';
+      // 자동 입력: 교과목명(파일1) / 수강인원(파일3) / 작성일(오늘)
+      const _cqiSt = S.f3Total ? S.f3Total.students : (S.f3?.flatMap(c=>c.students)||[]);
+      const _enrollEl = document.getElementById('cqi-enroll');
+      if(_enrollEl) _enrollEl.value = _cqiSt.length ? _cqiSt.length+'명' : '';
+      const _dateEl = document.getElementById('cqi-date');
+      if(_dateEl && !_dateEl.value){
+        const _now = new Date();
+        _dateEl.value = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}`;
+      }
+      const _subjectEl = document.getElementById('cqi-subject');
+      if(_subjectEl && !_subjectEl.value && S.raw[0]?._subject)
+        _subjectEl.value = S.raw[0]._subject;
       toast('✅ 분석 완료!');
     }catch(ex){
       document.getElementById('loading').classList.remove('show');
@@ -2144,10 +2182,17 @@ function buildAIReport(){
 // ═══════════════════════════════════════════════════════
 function generateCQI(){
   const subject   = document.getElementById('cqi-subject').value  || '(교과목명 미입력)';
-  const semester  = document.getElementById('cqi-semester').value || '(학기 미입력)';
+  const dept      = document.getElementById('cqi-dept').value     || '간호학과';
+  const type_     = document.getElementById('cqi-type')?.value    || '';
+  const grade     = document.getElementById('cqi-grade').value    || '';
+  const credit    = document.getElementById('cqi-credit').value   || '';
+  const enroll    = document.getElementById('cqi-enroll').value   || '';
   const professor = document.getElementById('cqi-professor').value|| '제프리 교수';
-  const dept      = document.getElementById('cqi-dept').value     || '청암대학교 간호학과';
-  const date      = new Date().toLocaleDateString('ko-KR');
+  const dateVal   = document.getElementById('cqi-date').value     || '';
+  // date input value는 YYYY-MM-DD → 표시용으로 변환
+  const date      = dateVal
+    ? (() => { const d=new Date(dateVal); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`; })()
+    : new Date().toLocaleDateString('ko-KR');
 
   const f   = v   => v!=null&&!isNaN(v)?v.toFixed(1):'-';
   const fp  = v   => v!=null&&!isNaN(v)?v.toFixed(1)+'%':'-';
@@ -2194,17 +2239,19 @@ function generateCQI(){
   // 헤더
   html += `<div class="cqi-report-hdr">
     <div class="cqi-report-title">교과목 학습성과 CQI 보고서</div>
-    <div class="cqi-report-sub">${dept} · ${professor} · ${semester} · 작성일: ${date}</div>
+    <div class="cqi-report-sub">${dept} · ${professor} · 작성일: ${date}</div>
     <div class="cqi-report-sub" style="font-size:13px;font-weight:700;margin-top:4px;color:var(--p1)">${subject}</div>
   </div>`;
 
   // ① 교과목 기본 정보
+  const displayEnroll = enroll || (n > 0 ? n+'명' : '-');
   html += `<div class="cqi-section"><div class="cqi-section-title">① 교과목 기본 정보</div>
-  <table class="cqi-table"><tbody>
-    <tr><th style="width:18%">교과목명</th><td>${subject}</td><th style="width:18%">담당교수</th><td>${professor}</td></tr>
-    <tr><th>학과</th><td>${dept}</td><th>학년/학기</th><td>${semester}</td></tr>
-    <tr><th>수강인원</th><td>${n}명</td><th>평가방법</th><td>필기시험 (${MAX_SCORE}점 만점)</td></tr>
-    <tr><th>작성일</th><td>${date}</td><th>성취기준점</th><td>환산 70점 이상 (원점수 ${PASS_RAW}점)</td></tr>
+  <table class="cqi-table"><colgroup><col style="width:14%"><col style="width:22%"><col style="width:14%"><col style="width:22%"><col style="width:14%"><col></colgroup>
+  <tbody>
+    <tr><th>교과목명</th><td colspan="3"><strong>${subject}</strong></td><th>담당교수</th><td>${professor}</td></tr>
+    <tr><th>대상학과</th><td>${dept}</td><th>이수구분</th><td>${type_||'-'}</td><th>수강학년</th><td>${grade||'-'}</td></tr>
+    <tr><th>학점/시수</th><td>${credit||'-'}</td><th>수강인원</th><td>${displayEnroll}</td><th>평가방법</th><td>필기시험 (${MAX_SCORE}점 만점)</td></tr>
+    <tr><th>작성일</th><td>${date}</td><th>성취기준점</th><td colspan="3">환산 70점 이상 (원점수 ${PASS_RAW}점)</td></tr>
   </tbody></table></div>`;
 
   // ② 학습성과 달성 현황
@@ -2598,15 +2645,39 @@ function sortTbl(id,col){
 
     <!-- 교과목 정보 입력 (분석 후 표시) -->
     <div id="cqiFormArea" style="display:none">
+      <!-- 1행: 교과목명(파일1 자동) · 대상학과 · 이수구분 · 수강학년(드롭다운) -->
       <div class="cqi-info-bar">
         <label>교과목명</label>
-        <input class="cqi-input" id="cqi-subject" placeholder="예: 성인간호학">
-        <label>학년/학기</label>
-        <input class="cqi-input" id="cqi-semester" placeholder="예: 2025-1">
+        <input class="cqi-input" id="cqi-subject" placeholder="파일1 자동 입력 또는 직접 입력"
+          style="background:#f0f9ff;color:#0369a1;font-weight:600">
+        <label>대상학과</label>
+        <input class="cqi-input" id="cqi-dept" value="간호학과">
+        <label>이수구분</label>
+        <select class="cqi-select" id="cqi-type">
+          <option value="">선택하세요</option>
+          <option>전공필수</option><option>전공선택</option>
+          <option>교양필수</option><option>교양선택</option>
+        </select>
+        <label>수강학년</label>
+        <select class="cqi-select" id="cqi-grade">
+          <option value="">선택하세요</option>
+          <option>1학년</option><option>2학년</option>
+          <option>3학년</option><option>4학년</option>
+          <option>전공심화과정</option>
+        </select>
+      </div>
+      <!-- 2행: 학점/시수 · 수강인원(파일3 자동) · 작성일(캘린더) · 담당교수 -->
+      <div class="cqi-info-bar" style="margin-top:0">
+        <label>학점/시수</label>
+        <input class="cqi-input" id="cqi-credit" placeholder="예: 2학점/2시수">
+        <label>수강인원</label>
+        <input class="cqi-input" id="cqi-enroll" placeholder="파일3 자동 입력"
+          style="background:#f0f9ff;color:#0369a1;font-weight:600">
+        <label>작성일</label>
+        <input type="date" class="cqi-input" id="cqi-date"
+          style="cursor:pointer">
         <label>담당교수</label>
         <input class="cqi-input" id="cqi-professor" value="제프리 교수">
-        <label>학과</label>
-        <input class="cqi-input" id="cqi-dept" value="청암대학교 간호학과">
       </div>
 
       <button class="cqi-gen-btn" onclick="generateCQI()">📑 CQI 보고서 자동 생성</button>
