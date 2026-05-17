@@ -167,8 +167,8 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
             <td>
               <span class="btn-preview btn-red">🔄 초기화</span>
             </td>
-            <td>업로드 파일, 분석 결과, CQI 보고서 입력 내용을 모두 초기 상태로 되돌림.<br>
-            <strong style="color:#dc2626">주의: CQI 보고서 내용도 모두 삭제됩니다. PDF로 저장 후 초기화하세요.</strong></td>
+            <td><strong>페이지를 완전히 새로고침</strong>하여 모든 상태(업로드 파일, 분석 결과, CQI 입력 내용)를 초기 상태로 되돌림.<br>
+            <strong style="color:#dc2626">주의: 모든 분석 결과와 CQI 보고서 입력 내용이 사라집니다. PDF·CSV로 저장 후 초기화하세요.</strong></td>
           </tr>
           <tr><td>📖 메뉴얼</td><td>이 페이지를 새 탭에서 열기</td></tr>
         </table>
@@ -182,7 +182,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
           <tr><td>🎯 문항 변별도</td><td>변별도 막대차트, 정답률 vs 변별도 산점도</td><td>파일 1</td></tr>
           <tr><td>⚖️ 반별 분석</td><td>반별 평균·성취율 비교, 미성취(환류) 학생 현황</td><td>파일 3</td></tr>
           <tr><td>🏆 성적 현황</td><td>개인별 석차, 환산점수, 성취수준</td><td>파일 3</td></tr>
-          <tr><td>📑 CQI 보고서</td><td>이론교과목 CQI 보고서 자동 생성 (2부 구성, PDF 저장)</td><td>1+2+3 권장</td></tr>
+          <tr><td>📑 CQI 보고서</td><td>이론교과목 CQI 보고서 자동 생성 (2부 구성, PDF 저장). <strong>성적 분석 실행 후 입력 양식 표시됨.</strong></td><td>1+2+3 권장</td></tr>
         </table>
       </div>
     </div>
@@ -284,6 +284,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
         </ul>
 
         <div class="man-tip">💡 데이터가 없는 탭은 흐리게 표시(dim)되어 클릭이 비활성화됩니다. 해당 파일을 업로드하면 자동으로 활성화됩니다.</div>
+        <div class="man-tip">💡 <strong>CQI 보고서 탭</strong>은 성적 분석 실행 전에는 안내 메시지만 표시됩니다. 파일 업로드 후 <strong>성적 분석 시작</strong>을 클릭해야 입력 양식이 나타납니다.</div>
       </div>
     </div>
 
@@ -369,12 +370,23 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
           <tr><td>3행</td><td>프로그램학습성과(PO) 번호 / 학습성과명 / 연계수준 / 반영비율</td></tr>
         </table>
 
+        <div class="man-h2">⚡ CQI 탭 초기 상태 안내</div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:12px;color:#334155;line-height:1.8">
+          <strong style="color:#1e40af">CQI 보고서 탭은 성적 분석 실행 후에만 입력 양식이 표시됩니다.</strong><br>
+          파일을 업로드하기 전 또는 초기화 후에는 아래와 같은 안내 메시지만 표시됩니다:<br>
+          <div style="background:#fff;border:1px dashed #cbd5e1;border-radius:8px;padding:12px;margin-top:8px;text-align:center;color:#64748b">
+            📑 <em>CQI 보고서를 생성하려면 먼저 성적 분석을 실행하세요.</em><br>
+            <small>파일을 업로드하고 성적 분석 시작 버튼을 클릭하면 CQI 입력 양식이 표시됩니다.</small>
+          </div>
+        </div>
+
         <div class="man-h2">📑 CQI 보고서 생성 순서</div>
-        <div class="man-step"><div class="man-step-num">1</div><div class="man-step-txt"><strong>CQI 보고서 탭</strong> 클릭 후 3행 입력창에 교과목 정보 입력</div></div>
-        <div class="man-step"><div class="man-step-num">2</div><div class="man-step-txt"><strong>CQI 보고서 자동 생성</strong> 버튼 클릭 → Ⅰ·Ⅱ부 구성 보고서 자동 작성</div></div>
-        <div class="man-step"><div class="man-step-num">3</div><div class="man-step-txt">생성된 보고서에서 각 입력창(textarea·input)에 내용 직접 작성</div></div>
-        <div class="man-step"><div class="man-step-num">4</div><div class="man-step-txt"><strong>📄 CQI 보고서 PDF 저장</strong> 버튼으로 A4 형식 PDF 저장</div></div>
-        <div class="man-warn">⚠️ <strong>초기화 버튼 클릭 전 반드시 PDF로 저장하세요.</strong> 초기화 시 CQI 보고서 입력 내용이 모두 삭제됩니다.</div>
+        <div class="man-step"><div class="man-step-num">1</div><div class="man-step-txt"><strong>파일 업로드 후 성적 분석 시작</strong> 버튼 클릭 → CQI 탭에 입력 양식이 나타남</div></div>
+        <div class="man-step"><div class="man-step-num">2</div><div class="man-step-txt"><strong>CQI 보고서 탭</strong> 클릭 후 3행 입력창에 교과목 정보 입력 (교과목명, PO 번호 등)</div></div>
+        <div class="man-step"><div class="man-step-num">3</div><div class="man-step-txt"><strong>CQI 보고서 자동 생성</strong> 버튼 클릭 → Ⅰ·Ⅱ부 구성 보고서 자동 작성</div></div>
+        <div class="man-step"><div class="man-step-num">4</div><div class="man-step-txt">생성된 보고서에서 각 입력창(textarea·input)에 내용 직접 작성</div></div>
+        <div class="man-step"><div class="man-step-num">5</div><div class="man-step-txt"><strong>📄 CQI 보고서 PDF 저장</strong> 버튼으로 A4 형식 PDF 저장</div></div>
+        <div class="man-warn">⚠️ <strong>초기화(<span style="color:#dc2626">🔄</span>) 버튼은 페이지를 완전히 새로고침합니다.</strong> CQI 보고서 입력 내용이 모두 사라지므로, 반드시 PDF로 저장한 후 초기화하세요.</div>
 
         <div class="man-h2">📑 CQI 보고서 구성 (2부)</div>
         <div class="cqi-flow">

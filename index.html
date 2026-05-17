@@ -656,38 +656,7 @@ function updateDynamicLabels(){
 
 
 function resetAll(){
-  [0,1,2].forEach(i=>{
-    S.raw[i]=null;
-    document.getElementById(`ico${i}`).textContent=['📋','📊','🗂️'][i];
-    document.getElementById(`fn${i}`).textContent='';
-    document.getElementById(`st${i}`).textContent='';
-    document.getElementById(`drop${i}`).className='up-card';
-    document.getElementById(`f${i}`).value='';
-  });
-  document.getElementById('stags2').innerHTML='';
-  Object.values(S.charts).forEach(c=>{try{c.destroy()}catch(e){}});
-  S.charts={};S.f1=S.f2=S.f3=S.f3Total=null;S.activeClass='all';
-  // 만점 초기화
-  MAX_SCORE=40; PASS_RAW=28; updateDynamicLabels();
-  document.getElementById('runBtn').classList.remove('show');
-  document.getElementById('dash').classList.remove('show');
-  // CQI 초기화
-  document.getElementById('cqiReport').innerHTML=
-    '<div class="cqi-no-data"><span style="font-size:32px;display:block;margin-bottom:10px">📑</span>'+
-    '교과목 정보를 입력하고 <strong>CQI 보고서 자동 생성</strong> 버튼을 클릭하세요.<br>'+
-    '<small style="color:var(--muted)">파일1·2·3 데이터를 기반으로 자동 분석됩니다.</small></div>';
-  document.getElementById('cqiExpBar').style.display='none';
-  document.getElementById('cqi-subject').value='';
-  document.getElementById('cqi-semester').value='';
-  document.getElementById('cqi-professor').value='제프리 교수';
-  document.getElementById('cqi-dept').value='간호학과';
-  document.getElementById('cqi-grade').value='';
-  document.getElementById('cqi-credit').value='';
-  document.getElementById('cqi-org').value='청암대학교 간호학과';
-  document.getElementById('cqi-po').value='';
-  document.getElementById('cqi-po-name').value='';
-  document.getElementById('cqi-po-level').value='';
-  document.getElementById('cqi-po-ratio').value='';
+  window.location.reload();
 }
 
 // ═══════════════════════════
@@ -1052,6 +1021,9 @@ function runAnalysis(){
 
       document.getElementById('loading').classList.remove('show');
       document.getElementById('dash').classList.add('show');
+      // CQI 폼 표시 (분석 완료 후)
+      document.getElementById('cqiInitMsg').style.display='none';
+      document.getElementById('cqiFormArea').style.display='block';
       toast('✅ 분석 완료!');
     }catch(ex){
       document.getElementById('loading').classList.remove('show');
@@ -2755,42 +2727,51 @@ function sortTbl(id,col){
   <div class="tab-pane" id="tp-cqi">
     <span class="src-bdg" style="background:#dbeafe;color:#1d4ed8">📑 CQI 보고서 · 교과목 학습성과 지속적 질 개선</span>
 
-    <!-- 교과목 정보 입력 -->
-    <div class="cqi-info-bar">
-      <label>교과목명</label><input class="cqi-input" id="cqi-subject" placeholder="예: 성인간호학">
-      <label>대상학과</label><input class="cqi-input" id="cqi-dept" value="간호학과">
-      <label>이수구분</label>
-      <select class="cqi-select" id="cqi-type">
-        <option>교양필수</option><option>교양선택</option><option>전공필수</option><option>전공선택</option>
-      </select>
-      <label>수강학년</label><input class="cqi-input" id="cqi-grade" placeholder="예: 1학년">
-    </div>
-    <div class="cqi-info-bar" style="margin-top:0">
-      <label>학점/시수</label><input class="cqi-input" id="cqi-credit" placeholder="예: 2학점/2시수">
-      <label>담당교수</label><input class="cqi-input" id="cqi-professor" value="제프리 교수">
-      <label>학년/학기</label><input class="cqi-input" id="cqi-semester" placeholder="예: 2025-1">
-      <label>소속기관</label><input class="cqi-input" id="cqi-org" value="청암대학교 간호학과">
-    </div>
-    <div class="cqi-info-bar" style="margin-top:0">
-      <label>프로그램학습성과(PO)</label><input class="cqi-input" id="cqi-po" placeholder="예: PO7">
-      <label>학습성과명</label><input class="cqi-input" id="cqi-po-name" placeholder="예: 정보통신과 보건의료기술">
-      <label>연계수준</label><input class="cqi-input" id="cqi-po-level" placeholder="예: L1">
-      <label>반영비율</label><input class="cqi-input" id="cqi-po-ratio" placeholder="예: 100%">
+    <!-- 초기 안내 (분석 실행 전) -->
+    <div id="cqiInitMsg" class="cqi-no-data" style="margin-top:12px">
+      <span style="font-size:36px;display:block;margin-bottom:12px">📑</span>
+      <strong style="font-size:14px;color:var(--txt)">CQI 보고서를 생성하려면 먼저 성적 분석을 실행하세요.</strong><br>
+      <span style="font-size:12px;margin-top:6px;display:inline-block">파일을 업로드하고 <strong>성적 분석 시작</strong> 버튼을 클릭하면 CQI 입력 양식이 표시됩니다.</span>
     </div>
 
-    <button class="cqi-gen-btn" onclick="generateCQI()">📑 CQI 보고서 자동 생성</button>
-
-    <!-- 보고서 출력 영역 -->
-    <div id="cqiReport">
-      <div class="cqi-no-data">
-        <span style="font-size:32px;display:block;margin-bottom:10px">📑</span>
-        교과목 정보를 입력하고 <strong>CQI 보고서 자동 생성</strong> 버튼을 클릭하세요.<br>
-        <small style="color:var(--muted)">파일1·2·3 데이터를 기반으로 자동 분석됩니다.</small>
+    <!-- 교과목 정보 입력 (분석 후 표시) -->
+    <div id="cqiFormArea" style="display:none">
+      <div class="cqi-info-bar">
+        <label>교과목명</label><input class="cqi-input" id="cqi-subject" placeholder="예: 성인간호학">
+        <label>대상학과</label><input class="cqi-input" id="cqi-dept" value="간호학과">
+        <label>이수구분</label>
+        <select class="cqi-select" id="cqi-type">
+          <option>교양필수</option><option>교양선택</option><option>전공필수</option><option>전공선택</option>
+        </select>
+        <label>수강학년</label><input class="cqi-input" id="cqi-grade" placeholder="예: 1학년">
       </div>
-    </div>
+      <div class="cqi-info-bar" style="margin-top:0">
+        <label>학점/시수</label><input class="cqi-input" id="cqi-credit" placeholder="예: 2학점/2시수">
+        <label>담당교수</label><input class="cqi-input" id="cqi-professor" value="제프리 교수">
+        <label>학년/학기</label><input class="cqi-input" id="cqi-semester" placeholder="예: 2025-1">
+        <label>소속기관</label><input class="cqi-input" id="cqi-org" value="청암대학교 간호학과">
+      </div>
+      <div class="cqi-info-bar" style="margin-top:0">
+        <label>프로그램학습성과(PO)</label><input class="cqi-input" id="cqi-po" placeholder="예: PO7">
+        <label>학습성과명</label><input class="cqi-input" id="cqi-po-name" placeholder="예: 정보통신과 보건의료기술">
+        <label>연계수준</label><input class="cqi-input" id="cqi-po-level" placeholder="예: L1">
+        <label>반영비율</label><input class="cqi-input" id="cqi-po-ratio" placeholder="예: 100%">
+      </div>
 
-    <div class="cqi-exp-bar" id="cqiExpBar" style="display:none">
-      <button class="pdf-all-btn" onclick="exportCQIPDF()">📄 CQI 보고서 PDF 저장</button>
+      <button class="cqi-gen-btn" onclick="generateCQI()">📑 CQI 보고서 자동 생성</button>
+
+      <!-- 보고서 출력 영역 -->
+      <div id="cqiReport">
+        <div class="cqi-no-data">
+          <span style="font-size:32px;display:block;margin-bottom:10px">📑</span>
+          교과목 정보를 입력하고 <strong>CQI 보고서 자동 생성</strong> 버튼을 클릭하세요.<br>
+          <small style="color:var(--muted)">파일1·2·3 데이터를 기반으로 자동 분석됩니다.</small>
+        </div>
+      </div>
+
+      <div class="cqi-exp-bar" id="cqiExpBar" style="display:none">
+        <button class="pdf-all-btn" onclick="exportCQIPDF()">📄 CQI 보고서 PDF 저장</button>
+      </div>
     </div>
   </div>
 
