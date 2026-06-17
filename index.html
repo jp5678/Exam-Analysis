@@ -803,6 +803,8 @@ function parseFile1(rows) {
   // ── 행별 파싱 ───────────────────────────────
   const items = rows.map((row,idx)=>{
     const rawNum = qCol ? String(row[qCol]).replace(/[번항문\s]/g,'').trim() : String(idx+1);
+    // 문항번호가 숫자인 행 = 실제 문항(통계가 비어 있어도 유지) / "평균·계·합계"류 footer는 비숫자 → 제외
+    const qNumeric = qCol ? /^\d+(\.\d+)?$/.test(rawNum) : false;
     const qName  = `문항${rawNum||idx+1}`;
 
     let cr = rCrCol ? parseFloat(row[rCrCol]) : null;
@@ -822,7 +824,7 @@ function parseFile1(rows) {
     let diffLbl = normDiff(diffCol?row[diffCol]:null);
     if(!diffLbl&&cr!=null) diffLbl=diffLevel(1-cr).lbl;
     const st=diffStyle(diffLbl);
-    return {qName,cr,wr:cr!=null?1-cr:null,disc,avg,sd,diffLbl,diffCls:st.cls,diffColor:st.col};
+    return {qName,qNumeric,cr,wr:cr!=null?1-cr:null,disc,avg,sd,diffLbl,diffCls:st.cls,diffColor:st.col};
   });
 
   // ── 파싱 후 cr 검증 ──────────────────────────
@@ -841,7 +843,8 @@ function parseFile1(rows) {
     it.diffCls=s.cls; it.diffColor=s.col;
   });
 
-  const valid=items.filter(i=>i.cr!=null||i.disc!=null||i.diffLbl!=null);
+  // 통계가 비어도 문항번호가 숫자면 실제 문항으로 간주해 유지(누락 방지)
+  const valid=items.filter(i=>i.cr!=null||i.disc!=null||i.diffLbl!=null||i.qNumeric);
   if(!valid.length) return null;
   return {type:'precomputed',items:valid,
     detected:{qCol,crCol:rCrCol,discCol:rDiscCol,diffCol,avgCol:rAvgCol,sdCol:rSdCol}};
@@ -1002,6 +1005,10 @@ function runAnalysis(){
       // File1 파싱 후 실제 문항 수로 자동 보정(수동 고정 시 건너뜀)
       if(S.f1 && S.f1.items.length) {
         applyDetectedMaxScore(S.f1.items.length);
+        // 인식된 문항 수가 설정값과 다르면 누락 경고
+        if(S.f1.items.length !== MAX_SCORE){
+          toast(`⚠️ 문항분석표에서 ${S.f1.items.length}문항 인식 / 설정 ${MAX_SCORE}문항 — 누락 의심`);
+        }
       }
       S.f2 = S.raw[1] ? parseFile2(S.raw[1].rows) : null;
       S.f3 = null; S.f3Total = null;
