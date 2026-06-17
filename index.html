@@ -73,6 +73,13 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
 .up-status{font-size:11px;color:var(--ok);font-weight:600;margin-top:2px}
 .sheet-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
 .stag{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
+.qcount-bar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;margin-bottom:10px;flex-wrap:wrap}
+.qcount-icon{font-size:18px}
+.qcount-bar label{font-size:13px;font-weight:700;color:var(--txt)}
+.qcount-bar input{width:78px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-weight:700;text-align:center;color:var(--p1);font-family:inherit}
+.qcount-bar input:focus{outline:none;border-color:var(--p1);box-shadow:0 0 0 2px rgba(37,99,235,.15)}
+.qcount-desc{font-size:12px;color:var(--muted)}
+.qcount-desc strong{color:var(--p1);font-weight:700}
 
 
 .run-btn{width:100%;padding:13px;background:linear-gradient(-45deg,#4285F4,#9C27B0,#00BCD4,#7C4DFF,#E91E63,#4285F4);background-size:400% 400%;animation:geminiShift 5s ease infinite;color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;display:none;transition:transform .2s,box-shadow .2s;letter-spacing:.3px}
@@ -283,7 +290,13 @@ input[type="date"].cqi-input::-webkit-calendar-picker-indicator:hover{opacity:1}
   </div>
 </div>
 
-
+<!-- 문항 수 / 만점 환산 기준 -->
+<div class="qcount-bar">
+  <span class="qcount-icon">📐</span>
+  <label for="qcount">문항 수</label>
+  <input type="number" id="qcount" min="1" max="300" step="1" value="40" onchange="setQCount(this.value)" oninput="setQCount(this.value)">
+  <span class="qcount-desc">문항 → <strong>100점 만점</strong> 환산 (문항당 <strong id="per-item">2.5</strong>점)</span>
+</div>
 
 <button class="run-btn" id="runBtn" onclick="runAnalysis()">📊 성적 분석 시작</button>
 <div class="loading" id="loading"><div class="spin"></div><p>데이터 분석 중…</p></div>
@@ -576,6 +589,7 @@ input[type="date"].cqi-input::-webkit-calendar-picker-indicator:hover{opacity:1}
 // ═══════════════════════════
 let MAX_SCORE = 40;   // 파일1 문항 수 또는 수동 입력으로 자동 갱신
 let PASS_RAW  = 28;   // MAX_SCORE × 70% (runAnalysis에서 재계산)
+let MAX_SCORE_LOCKED = false;  // 사용자가 문항 수를 직접 입력하면 true → 자동 감지보다 우선
 
 // ═══════════════════════════
 // STATE
@@ -628,9 +642,7 @@ function loadFile(inp, slot) {
       // 파일1 업로드 시: 문항 수 자동 감지 + 응시과목 탐지
       if(slot===0 && S.raw[0]?.rows?.length) {
         const detectedN = S.raw[0].rows.length;
-        MAX_SCORE = detectedN;
-        PASS_RAW  = Math.round(MAX_SCORE * 0.7);
-        updateDynamicLabels();
+        applyDetectedMaxScore(detectedN);
         // 건너뛴 1~5행에서 응시과목 탐지
         try {
           const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -678,6 +690,30 @@ function loadFile(inp, slot) {
 // .ms-dyn 스팬 전체를 현재 MAX_SCORE 값으로 갱신
 function updateDynamicLabels(){
   document.querySelectorAll('.ms-dyn').forEach(el=>{ el.textContent=MAX_SCORE; });
+  const pi = document.getElementById('per-item');
+  if(pi) pi.textContent = (Math.round(100/MAX_SCORE*100)/100);
+}
+
+// 문항 수 수동 입력 → MAX_SCORE 고정(자동 감지보다 우선)
+// 100점 만점 환산은 (원점수 / MAX_SCORE) × 100 으로 계산됨
+function setQCount(v){
+  const n = parseInt(v, 10);
+  if(!n || n < 1) return;            // 빈 값/0 이하는 무시(자동 감지 유지)
+  MAX_SCORE = n;
+  MAX_SCORE_LOCKED = true;
+  PASS_RAW = Math.round(MAX_SCORE * 0.7);
+  updateDynamicLabels();
+}
+
+// 자동 감지된 문항 수를 반영(수동 고정 시에는 건너뜀)
+function applyDetectedMaxScore(n){
+  if(!n || n < 1) return;
+  if(MAX_SCORE_LOCKED) return;       // 사용자가 직접 입력한 값 우선
+  MAX_SCORE = n;
+  PASS_RAW  = Math.round(MAX_SCORE * 0.7);
+  const inp = document.getElementById('qcount');
+  if(inp) inp.value = MAX_SCORE;     // 입력란 표시도 동기화
+  updateDynamicLabels();
 }
 
 
@@ -963,12 +999,9 @@ function runAnalysis(){
     try{
       S.f1 = S.raw[0] ? parseFile1(S.raw[0].rows) : null;
 
-      // File1 파싱 후 실제 문항 수로 자동 보정
+      // File1 파싱 후 실제 문항 수로 자동 보정(수동 고정 시 건너뜀)
       if(S.f1 && S.f1.items.length) {
-        const detN = S.f1.items.length;
-        MAX_SCORE = detN;
-        PASS_RAW  = Math.round(detN * 0.7);
-        updateDynamicLabels();
+        applyDetectedMaxScore(S.f1.items.length);
       }
       S.f2 = S.raw[1] ? parseFile2(S.raw[1].rows) : null;
       S.f3 = null; S.f3Total = null;
