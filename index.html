@@ -601,11 +601,11 @@ const S = { raw:[null,null,null], f1:null, f2:null, f3:null,
 // ═══════════════════════════
 // FILE UPLOAD
 // ═══════════════════════════
-// 파일별 건너뛸 행 수 (1행~N행 제외 → N행이 머리글)
-// slot 0(문항분석표): 1~5행 제외 → 6행이 헤더 → range:5
-// slot 1(성적분포도): 1~6행 제외 → 7행이 헤더 → range:6
-// slot 2(종합성적현황): 1~6행 제외 → 7행이 헤더 → range:6
-const SKIP_ROWS = [5, 6, 6];
+// 파일별 건너뛸 행 수 (range = 0-based 헤더 행 번호, 데이터는 그 다음 행부터)
+// slot 0(문항분석표): 1~2행이 헤더 → 2행(index 1)을 머리글, 데이터 3행부터 → range:1
+// slot 1(성적분포도): 1행이 헤더 → range:0
+// slot 2(종합성적현황): 1행이 헤더 → range:0
+const SKIP_ROWS = [1, 0, 0];
 
 function loadFile(inp, slot) {
   const f = inp.files[0]; if(!f) return;
@@ -617,12 +617,10 @@ function loadFile(inp, slot) {
       const skip = SKIP_ROWS[slot] ?? 0;
       const opts = {defval:'', raw:false, range: skip};   // range = 0-based 헤더 행 번호
       if(slot === 2) {
-        // Sheet1(전체): 1~6행 제외(range:6), 반별 시트: 첫 행이 헤더(range:0)
-        const TOTAL_PAT = /^sheet\d+$|^전체$|^종합$|^all$|^total$/i;
+        // 전체/반별 시트 모두 1행이 헤더(range:0)
         const sheets = wb.SheetNames
           .map(n => {
-            const isTotal = TOTAL_PAT.test(n.trim());
-            const sheetOpts = {defval:'', raw:false, range: isTotal ? SKIP_ROWS[2] : 0};
+            const sheetOpts = {defval:'', raw:false, range: SKIP_ROWS[2]};
             return {name:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], sheetOpts)};
           })
           .filter(s => s.rows.length > 0);

@@ -196,7 +196,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
         <div class="man-p">문항별로 사전 계산된 통계 데이터(정답률, 변별도, 난이도 등)가 담긴 Excel 파일입니다.</div>
         <table class="man-table">
           <tr><th style="width:26%">항목</th><th>내용</th></tr>
-          <tr><td>건너뛰는 행</td><td>1행~5행 제외 → <strong>6행이 헤더(머리글)</strong></td></tr>
+          <tr><td>헤더(머리글)</td><td>1~2행이 헤더 → <strong>2행을 머리글, 데이터는 3행부터</strong></td></tr>
           <tr><td>필수 열</td><td>문항번호, 정답률(또는 정답율)</td></tr>
           <tr><td>선택 열</td><td>변별도, 난이도, 평균, 표준편차</td></tr>
           <tr><td>정답률 스케일</td><td>0~1 또는 0~100 <strong>자동 감지</strong></td></tr>
@@ -208,7 +208,7 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
         <div class="man-p">0~100점 범위의 성적 분포 데이터입니다.</div>
         <table class="man-table">
           <tr><th style="width:26%">항목</th><th>내용</th></tr>
-          <tr><td>건너뛰는 행</td><td>1행~6행 제외 → <strong>7행이 헤더(머리글)</strong></td></tr>
+          <tr><td>헤더(머리글)</td><td><strong>1행이 헤더(머리글)</strong>, 데이터는 2행부터</td></tr>
           <tr><td>형식 ①</td><td>점수 열 + 인원수 열 (빈도표 형식)</td></tr>
           <tr><td>형식 ②</td><td>개인별 점수 목록 (1열에 점수만 있는 경우)</td></tr>
           <tr><td>점수 범위</td><td>0~100점 (환산점수 기준) 또는 원점수 자동 감지</td></tr>
@@ -218,8 +218,8 @@ body{font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
         <div class="man-p">반별 개인 성적이 담긴 다중 시트 Excel 파일입니다.</div>
         <table class="man-table">
           <tr><th style="width:26%">항목</th><th>내용</th></tr>
-          <tr><td>Sheet1 (전체)</td><td>1행~6행 제외 → <strong>7행이 헤더</strong> / 전체 학생 통합 데이터</td></tr>
-          <tr><td>반별 시트</td><td>시트명 = 반 이름, <strong>첫 행이 헤더</strong></td></tr>
+          <tr><td>Sheet1 (전체)</td><td><strong>1행이 헤더</strong> / 전체 학생 통합 데이터</td></tr>
+          <tr><td>반별 시트</td><td>시트명 = 반 이름, <strong>첫 행(1행)이 헤더</strong></td></tr>
           <tr><td>필수 열</td><td>점수(원점수) 열</td></tr>
           <tr><td>선택 열</td><td>학번, 이름</td></tr>
         </table>
